@@ -5,20 +5,34 @@ import pandas as pd
 import shapely.wkt
 
 def validate_geo(data):
-    barrios = gpd.read_file('/Users/gerardoaboulafia/Library/Mobile Documents/com~apple~CloudDocs/UCA/Documentos/Cuatrimestre 4/Estadística Avanzada/TP/Pipeline/barrios copy.csv')
+    barrios = gpd.read_file('Pipeline/barrios copy.csv')
+    #barrios = gpd.read_file('/Users/gerardoaboulafia/Library/Mobile Documents/com~apple~CloudDocs/UCA/Documentos/Cuatrimestre 4/Estadística Avanzada/TP/Pipeline/barrios copy.csv')
     barrios['geometry'] = barrios['WKT'].apply(lambda x: shapely.wkt.loads(x))
     combined_polygon = unary_union(barrios['geometry'])
 
-    data_con_coords = data.dropna(subset=['latitud', 'longitud'])
-    puntos = data_con_coords.apply(lambda row: Point(row['longitud'], row['latitud']), axis=1)
-    data_con_coords.loc[:, 'en_capital'] = puntos.apply(lambda point: combined_polygon.contains(point))
+    # Máscaras de coordenadas presentes / faltantes
+    mask_coords_ok = data[['latitud', 'longitud']].notna().all(axis=1)
+    mask_coords_missing = ~mask_coords_ok
 
-    data = pd.concat([data_con_coords, data[data[['latitud', 'longitud']].isna().any(axis=1)]], ignore_index=True)
-    data = data[data['en_capital'] == True]
+    # Inicializar en_capital como NaN y luego completar
+    data['en_capital'] = pd.NA
 
-    deleted = data[data['en_capital'] == False]
+    # Evaluar puntos sólo donde hay coords
+    if mask_coords_ok.any():
+        puntos = data.loc[mask_coords_ok, ['longitud', 'latitud']].apply(
+            lambda r: Point(r['longitud'], r['latitud']), axis=1
+        )
+        inside = puntos.apply(lambda p: combined_polygon.contains(p) or combined_polygon.touches(p))
+        # Si tocás el borde, lo consideramos dentro (contains excluye el borde)
+        data.loc[mask_coords_ok, 'en_capital'] = inside
 
-    print(f"Fueron eliminados {len(deleted)} registros que no estaban en CABA.")
-    data = data.drop(columns=['en_capital'])
-    
+        # Flagear fuera de CABA
+        mask_outside = mask_coords_ok & (~inside)
+        data.loc[mask_outside, 'flag'] = (
+            data.loc[mask_outside, 'flag'].fillna('') + 'Not in Capital Federal (polygon); '
+        )
+
+    # Limpiar separadores y normalizar flags vacíos a None
+    data['flag'] = data['flag'].str.rstrip('; ').replace({'': None})
+
     return data

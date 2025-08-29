@@ -1,6 +1,6 @@
 import pandas as pd
 
-def eliminar_outliers(df, columna):
+def flag_outliers(df, columna):
     Q1 = df[columna].quantile(0.25)
     Q3 = df[columna].quantile(0.75)
     IQR = Q3 - Q1
