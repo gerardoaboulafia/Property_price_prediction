@@ -20,11 +20,10 @@ def main_pipeline():
     # Cargar el dataset
     data = pd.read_csv(input_file)
 
-    # 1. Subetapa de filtrado por currency y place_l2
+    # 1. Subetapa de filtrado por currency y l2
     data = filter_by_currency_place(data)
 
     print("\n")
-
 
     print("Filtrando data...")
 
@@ -39,17 +38,16 @@ def main_pipeline():
     print("Validando que los departamentos se encuentren en CABA...")
 
     # 4. Subetapa de cálculo de distancia al subte más cercano
+    print("Calculando la distancia al subte más cercano...")
     data = calculate_subte_distance(data)
 
-    print("Calculando la distancia al subte más cercano...")
 
     # 5. Subetapa de limpieza de outliers
+    print("Limpiando outliers...")
     data = clean_data_outliers(data)
 
-    print("Limpiando outliers...")
 
-    # 6. Crear variables dummies para 'place_l3' y 'type'
-    data = pd.get_dummies(data, columns=['place_l3', 'type'], prefix=['place_l3', 'type'])
+    
 
     print("Creando variables dummies...")
 

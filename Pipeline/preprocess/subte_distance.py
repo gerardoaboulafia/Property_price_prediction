@@ -4,7 +4,7 @@ from shapely.geometry import Point
 import pandas as pd
 
 def calculate_subte_distance(data):
-    df_subte = pd.read_csv('/Users/gerardoaboulafia/Library/Mobile Documents/com~apple~CloudDocs/UCA/Documentos/Cuatrimestre 4/Estadística Avanzada/TP/Pipeline/estaciones-de-subte copy.csv')
+    df_subte = pd.read_csv('Pipeline/estaciones-de-subte copy.csv')
     geo_subte = gpd.GeoDataFrame(df_subte, geometry=gpd.points_from_xy(df_subte['long'], df_subte['lat']))
 
     gdf_clean = data.dropna(subset=['latitud', 'longitud'])

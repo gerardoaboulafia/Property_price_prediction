@@ -15,4 +15,10 @@ def validate_geo(data):
 
     data = pd.concat([data_con_coords, data[data[['latitud', 'longitud']].isna().any(axis=1)]], ignore_index=True)
     data = data[data['en_capital'] == True]
+
+    deleted = data[data['en_capital'] == False]
+
+    print(f"Fueron eliminados {len(deleted)} registros que no estaban en CABA.")
+    data = data.drop(columns=['en_capital'])
+    
     return data
