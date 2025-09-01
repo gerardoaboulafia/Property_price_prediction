@@ -1,47 +1,42 @@
 import pandas as pd
 
-def flag_outliers(df, columna):
-    Q1 = df[columna].quantile(0.25)
-    Q3 = df[columna].quantile(0.75)
-    IQR = Q3 - Q1
-    rango_inferior = Q1 - 1.5 * IQR
-    rango_superior = Q3 + 1.5 * IQR * 1.1
-    return df[(df[columna] >= rango_inferior) & (df[columna] <= rango_superior)]
+def flag_outliers(df):
+    price_upper_bound = 1500000
+    price_lower_bound = 20000
+
+    rooms_upper_bound = 15
+    rooms_lower_bound = 1
+
+    surface_upper_bound = 500
+    surface_lower_bound = 20
+
+    # --- Precio ---
+    mask_price_low = df['price'] < price_lower_bound
+    mask_price_high = df['price'] > price_upper_bound
+    df.loc[mask_price_low, 'flag'] = df.loc[mask_price_low, 'flag'].fillna('') + 'Price too low; '
+    df.loc[mask_price_high, 'flag'] = df.loc[mask_price_high, 'flag'].fillna('') + 'Price too high; '
+
+    # --- Ambientes ---
+    mask_rooms_low = df['rooms'] < rooms_lower_bound
+    mask_rooms_high = df['rooms'] > rooms_upper_bound
+    df.loc[mask_rooms_low, 'flag'] = df.loc[mask_rooms_low, 'flag'].fillna('') + 'Not enough rooms; '
+    df.loc[mask_rooms_high, 'flag'] = df.loc[mask_rooms_high, 'flag'].fillna('') + 'Too many rooms; '
+
+    # --- Superficie ---
+    mask_surface_low = df['surface'] < surface_lower_bound
+    mask_surface_high = df['surface'] > surface_upper_bound
+    df.loc[mask_surface_low, 'flag'] = df.loc[mask_surface_low, 'flag'].fillna('') + 'Surface too small; '
+    df.loc[mask_surface_high, 'flag'] = df.loc[mask_surface_high, 'flag'].fillna('') + 'Surface too large; '
+
+    # Limpiar separadores y normalizar flags vacíos a None
+    df['flag'] = df['flag'].str.rstrip('; ').replace({'': None})
+
+    return df
+
 
 def clean_data_outliers(data):
-    """
-    Necesitamos modificar esto para que en lugar de calcular las medias con el nuevo conjunto de datos, 
-    """
-    casas = data[data['type'] == 'Casa']
-    departamentos = data[data['type'] == 'Departamento']
-    ph = data[data['type'] == 'PH']
-
-    casas_limpio = eliminar_outliers(casas, 'price')
-    departamentos_limpio = eliminar_outliers(departamentos, 'price')
-    ph_limpio = eliminar_outliers(ph, 'price')
-
-    data = pd.concat([casas_limpio, departamentos_limpio, ph_limpio], ignore_index=True)
-
-    data = data[data['price'] >= 10000]
-    data = data[~((data['type'] == 'Departamento') & (data['surface_total'] > 800))]
-    data = data[~((data['bedrooms'] > 15) & (data['title'].str.contains('hotel', case=False)))]
-    data = data[~(data['bedrooms'] > data['rooms_final'])]
-
-    data = data[(data['price'] > 0) & (data['m2_final'] > 0) & (data['rooms_final'] > 0)]
-
+    data = flag_outliers(data)
     data['rooms_final'] = data.groupby('l3')['rooms_final'].transform(lambda x: x.fillna(x.mean()))
     data['m2_final'] = data.groupby('l3')['m2_final'].transform(lambda x: x.fillna(x.mean()))
-    data['price'] = data.groupby('l3')['price'].transform(lambda x: x.fillna(x.mean()))
     data['distancia_subte_cercano'] = data.groupby('l3')['distancia_subte_cercano'].transform(lambda x: x.fillna(x.mean()))
-
-    data = data.dropna(subset=['l3', 'type'])
-
-    
-    
-    data = data.drop(['id', 'start_date', 'end_date', 'created_on', 'latitud', 'longitud', 'l2', 
-                  'operation','rooms', 'bedrooms', 'surface_total', 'surface_covered', 
-                  'title', 'm2_descripcion', 'rooms_total'], axis=1)
-
-
-
     return data

@@ -46,29 +46,15 @@ def main_pipeline():
     print("Limpiando outliers...")
     data = clean_data_outliers(data)
 
-
-    
-
     print("Creando variables dummies...")
 
-    # Definir col_dummies
-    col_dummies = ['place_l3_Agronomía', 'place_l3_Almagro', 'place_l3_Balvanera', 'place_l3_Barracas', 'place_l3_Barrio Norte', 'place_l3_Belgrano', 'place_l3_Boca', 'place_l3_Boedo', 'place_l3_Caballito', 'place_l3_Catalinas', 'place_l3_Centro / Microcentro', 'place_l3_Chacarita', 'place_l3_Coghlan', 'place_l3_Colegiales', 'place_l3_Congreso', 'place_l3_Constitución', 'place_l3_Flores', 'place_l3_Floresta', 'place_l3_Las Cañitas', 'place_l3_Liniers', 'place_l3_Mataderos', 'place_l3_Monserrat', 'place_l3_Monte Castro', 'place_l3_Nuñez', 'place_l3_Once', 'place_l3_Palermo', 'place_l3_Parque Avellaneda', 'place_l3_Parque Centenario', 'place_l3_Parque Chacabuco', 'place_l3_Parque Chas', 'place_l3_Parque Patricios', 'place_l3_Paternal', 'place_l3_Pompeya', 'place_l3_Puerto Madero', 'place_l3_Recoleta', 'place_l3_Retiro', 'place_l3_Saavedra', 'place_l3_San Cristobal', 'place_l3_San Nicolás', 'place_l3_San Telmo', 'place_l3_Tribunales', 'place_l3_Velez Sarsfield', 'place_l3_Versalles', 'place_l3_Villa Crespo', 'place_l3_Villa Devoto', 'place_l3_Villa General Mitre', 'place_l3_Villa Lugano', 'place_l3_Villa Luro', 'place_l3_Villa Ortuzar', 'place_l3_Villa Pueyrredón', 'place_l3_Villa Real', 'place_l3_Villa Riachuelo', 'place_l3_Villa Santa Rita', 'place_l3_Villa Soldati', 'place_l3_Villa Urquiza', 'place_l3_Villa del Parque', 'type_Departamento', 'type_PH']
+    # Seleccionar el subconjunto de columnas numéricas para escalar
+    numeric_features = ['rooms_final', 'm2_final', 'distancia_subte_cercano']
 
-    # Añadir las columnas que faltan en data (rellenarlas con ceros)
-    for col in col_dummies:
-        if col not in data.columns:
-            data[col] = 0
-
-    # Eliminar las columnas adicionales que no están en col_dummies ni en las features numéricas
-    numeric_features = ['rooms_final', 'm2_final', 'distancia_subte_cercano','price']
-    required_columns = numeric_features + col_dummies
-    data = data[[col for col in required_columns if col in data.columns]]
-
-    # Escalar los datos
-    scaler = StandardScaler()
-    data[['rooms_final', 'm2_final', 'distancia_subte_cercano']] = scaler.fit_transform(
-        data[['rooms_final', 'm2_final', 'distancia_subte_cercano']]
-    )
+    # Escalar los datos con el scaler que se ajustó a los datos de entrenamiento
+    with open ('models/scaler.pkl', 'rb') as scaler_file:
+        scaler = pickle.load(scaler_file)
+    data[numeric_features] = scaler.transform(data[numeric_features])
 
     # Separar las features (X) y la etiqueta (y)
     X_train = data.drop('price', axis=1)
