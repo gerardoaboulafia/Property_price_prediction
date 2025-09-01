@@ -20,11 +20,13 @@ def main_pipeline():
     # Cargar el dataset
     data = pd.read_csv(input_file)
 
+    # keep only 'lat,'lon', 'l1', 'l2', 'l3','rooms','surface_total', 'currency', 'title', 'description', 'property_type', 'operation_type','price'
+    data = data[['lat', 'lon', 'l1', 'l2', 'l3', 'rooms', 'surface_total', 'currency', 'title', 'description', 'property_type', 'operation_type', 'price']]
+
     # 1. Subetapa de filtrado por currency y l2
     data = filter_by_currency_place(data)
 
     print("\n")
-
     print("Filtrando data...")
 
     # 2. Subetapa de extracción de valores con RegEx
@@ -41,12 +43,19 @@ def main_pipeline():
     print("Calculando la distancia al subte más cercano...")
     data = calculate_subte_distance(data)
 
+    # keep only relevant columns: place_l3	type	rooms_final	m2_final	distancia_subte_cercano    price
+    data = data[['rooms_final', 'm2_final', 'distancia_subte_cercano', 'l3', 'property_type', 'price']]
 
     # 5. Subetapa de limpieza de outliers
     print("Limpiando outliers...")
     data = clean_data_outliers(data)
 
-    print("Creando variables dummies...")
+
+    # Separamos los datos con los que se trabajará (aquellas filas en donde 'flag' es None) 
+    valid_data = data[data['flag'].isnull()]
+    invalid_data = data[data['flag'].notnull()]
+    print(f"Datos válidos para predicción: {valid_data.shape[0]} filas")
+    print(f"Datos inválidos para predicción: {invalid_data.shape[0]} filas")
 
     # Seleccionar el subconjunto de columnas numéricas para escalar
     numeric_features = ['rooms_final', 'm2_final', 'distancia_subte_cercano']
@@ -54,11 +63,11 @@ def main_pipeline():
     # Escalar los datos con el scaler que se ajustó a los datos de entrenamiento
     with open ('models/scaler.pkl', 'rb') as scaler_file:
         scaler = pickle.load(scaler_file)
-    data[numeric_features] = scaler.transform(data[numeric_features])
+    valid_data[numeric_features] = scaler.transform(valid_data[numeric_features])
 
     # Separar las features (X) y la etiqueta (y)
-    X_train = data.drop('price', axis=1)
-    #y_train = data['price']
+    X_train = valid_data.drop('price', axis=1)
+    #y_train = valid_data['price']
 
     # Cargar el modelo preentrenado de XGBoost
     with open('models/model_xgboost.pkl', 'rb') as model_file:
@@ -68,35 +77,43 @@ def main_pipeline():
     print("Realizando predicciones...")
     print("\n")
 
-    data['precio_prediccion'] = model.predict(X_train)
+    valid_data['precio_prediccion'] = model.predict(X_train)
+
+    # Calculamos el r cuadrado para la predicción
+    r2 = r2_score(valid_data['price'], valid_data['precio_prediccion'])
+    print(f"Coeficiente de determinación R^2: {r2}")
 
     # Calcular el error absoluto
-    data['error_abs'] = abs(data['price'] - data['precio_prediccion'])
+    valid_data['error_abs'] = abs(valid_data['price'] - valid_data['precio_prediccion'])
 
     # Calcular el error absoluto relativo
-    data['error_rel'] = data['error_abs'] / data['price']
+    valid_data['error_rel'] = valid_data['error_abs'] / valid_data['price']
 
     # Guardar el resultado final en un nuevo archivo CSV
     output_file = 'predicciones.csv'
-    data.to_csv(output_file, index=False)
+
+    # Concatenar valid_data con invalid_data
+    final_data = pd.concat([valid_data, invalid_data], axis=0)
+
+    final_data.to_csv(output_file, index=False)
     print(f"Pipeline completada. Resultados guardados en {output_file}")
 
     # Mostrar el error promedio
-    print(f"Error absoluto promedio: {data['error_abs'].abs().mean()}")
-    print(f"Error cuadrático medio: {((data['error_abs'] ** 2).mean()) ** 0.5}")
-    print(f"Error absoluto relativo promedio: {data['error_rel'].abs().mean()}")
+    print(f"Error absoluto promedio: {valid_data['error_abs'].abs().mean()}")
+    print(f"Error cuadrático medio: {((valid_data['error_abs'] ** 2).mean()) ** 0.5}")
+    print(f"Error absoluto relativo promedio: {valid_data['error_rel'].abs().mean()}")
 
     # Mostrar el coeficiente de determinación R^2
-    print(f"Coeficiente de determinación R^2: {r2_score(data['price'], data['precio_prediccion'])}")
+    print(f"Coeficiente de determinación R^2: {r2_score(valid_data['price'], valid_data['precio_prediccion'])}")
 
     # Mostrar los cuartiles del error relativo
     print("\n")
     print("Cuartiles del error relativo:")
-    print(data['error_rel'].describe())
+    print(valid_data['error_rel'].describe())
 
     # Generar un histograma de la columna error_rel
     plt.figure(figsize=(10, 6))
-    plt.hist(data['error_rel'], bins=30, edgecolor='black', alpha=0.7)
+    plt.hist(valid_data['error_rel'], bins=30, edgecolor='black', alpha=0.7)
     plt.title('Distribución del Error Relativo')
     plt.xlabel('Error Relativo')
     plt.ylabel('Frecuencia')

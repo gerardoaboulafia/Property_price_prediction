@@ -1,6 +1,10 @@
 import pandas as pd
 
 def flag_outliers(df):
+    """
+    La función marca los outliers 
+    Tiene que recibir un dataset con las columnas price, rooms, m2.
+    """
     price_upper_bound = 1500000
     price_lower_bound = 20000
 
@@ -23,8 +27,8 @@ def flag_outliers(df):
     df.loc[mask_rooms_high, 'flag'] = df.loc[mask_rooms_high, 'flag'].fillna('') + 'Too many rooms; '
 
     # --- Superficie ---
-    mask_surface_low = df['surface'] < surface_lower_bound
-    mask_surface_high = df['surface'] > surface_upper_bound
+    mask_surface_low = df['m2'] < surface_lower_bound
+    mask_surface_high = df['m2'] > surface_upper_bound
     df.loc[mask_surface_low, 'flag'] = df.loc[mask_surface_low, 'flag'].fillna('') + 'Surface too small; '
     df.loc[mask_surface_high, 'flag'] = df.loc[mask_surface_high, 'flag'].fillna('') + 'Surface too large; '
 
@@ -35,6 +39,10 @@ def flag_outliers(df):
 
 
 def clean_data_outliers(data):
+    """
+    Limpia los outliers en el conjunto de datos.
+    La función recibe un dataset cuyas columnas son 'rooms_final', 'm2_final', 'distancia_subte_cercano'.
+    """
     data = flag_outliers(data)
     data['rooms_final'] = data.groupby('l3')['rooms_final'].transform(lambda x: x.fillna(x.mean()))
     data['m2_final'] = data.groupby('l3')['m2_final'].transform(lambda x: x.fillna(x.mean()))

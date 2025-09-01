@@ -4,9 +4,17 @@ import numpy as np
 
 # Función que utiliza RegEx para encontrar el número de ambientes.
 def find_numbers(x_column, x_word, data):
-    """ La función busca en la columna especificada de df la
-        palabra deseada y toma el número que la precede. La idea es utilizar
-        title|description como columnas y amb|dorm|hab como palabras.
+    """ 
+    La función find_numbers busca en la columna especificada de data la
+    palabra deseada y toma el número que la precede. La idea es utilizar
+    title|description como columnas y amb|dorm|hab como palabras.
+
+    Toma como parámetros:
+    - x_column: El nombre de la columna en la que buscar.
+    - x_word: La palabra clave a buscar (ej. "ambientes").
+    - data: El DataFrame de pandas en el que buscar.
+
+    Devuelve una Serie de pandas con los números encontrados.
     """
     fix_dict = {
         'un':'1', 'Un':'1', 'UN':'1',
@@ -34,10 +42,14 @@ def find_numbers(x_column, x_word, data):
     match_amb[~mask_numeric] = np.nan
     return match_amb
 
+
 # Función para llenar rooms_total
 def fill_rooms_total(x_rooms_total, x_column, x_word, data):
-    """ Llenado del totalizador 'rooms_total' con la combinación correcta de
-        title|description como columnas y amb|dorm|hab como palabras.
+
+    """
+    La función fill_rooms_total llena la serie x_rooms_total con los valores
+    encontrados en la columna especificada de data, utilizando la palabra clave
+    proporcionada.
     """
     rooms_partial = find_numbers(x_column, x_word, data)
 
@@ -51,8 +63,20 @@ def fill_rooms_total(x_rooms_total, x_column, x_word, data):
     x_rooms_total.fillna(rooms_partial, inplace=True)
     return x_rooms_total
 
+
+
 # Función principal para extraer características usando RegEx
 def extract_features_regex(data):
+    """
+    Función principal para extraer características usando expresiones regulares.
+    Toma como parámetro un DataFrame de pandas, y asume que la columna
+    'title' contiene los textos a analizar.
+
+    Devuelve el DataFrame con las características extraídas.
+    - rooms_total: Serie con el total de ambientes.
+    - m2_total: Serie con los metros cuadrados totales.
+    """
+
     # Inicialización del contador de rooms_total
     rooms_total = pd.Series([np.nan for _ in data.rooms])
 

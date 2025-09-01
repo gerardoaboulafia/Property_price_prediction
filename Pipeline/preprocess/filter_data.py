@@ -1,4 +1,10 @@
 def filter_by_currency_place(data):
+    """
+    La función filter_by_currency_place filtra el DataFrame según la moneda y la ubicación.
+    Toma como parámetro un DataFrame de pandas.
+    Asume que las columnas 'currency' y 'l2' existen en el DataFrame.
+    Devuelve el DataFrame con los casos flageados.
+    """
     # Initialize flag column
     data['flag'] = ''
     
