@@ -11,8 +11,8 @@ def validate_geo(data):
     Asume que las columnas 'lat' y 'lon' existen en el DataFrame.
     Devuelve el DataFrame con los casos flageados.
     """
-    barrios = gpd.read_file('Pipeline/barrios copy.csv')
-    #barrios = gpd.read_file('/Users/gerardoaboulafia/Library/Mobile Documents/com~apple~CloudDocs/UCA/Documentos/Cuatrimestre 4/Estadística Avanzada/TP/Pipeline/barrios copy.csv')
+    #barrios = gpd.read_file('Pipeline/barrios copy.csv')
+    barrios = gpd.read_file('/Users/gerardoaboulafia/Library/Mobile Documents/com~apple~CloudDocs/UCA/Documentos/Cuatrimestre 4/Estadística Avanzada/TP/Pipeline/barrios copy.csv')
     barrios['geometry'] = barrios['WKT'].apply(lambda x: shapely.wkt.loads(x))
     combined_polygon = unary_union(barrios['geometry'])
 
