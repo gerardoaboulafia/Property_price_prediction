@@ -1,5 +1,8 @@
 import pandas as pd
 
+# data4 = data4[['rooms_final', 'm2_final', 'distancia_subte_cercano', 'l3', 'property_type', 'price']]
+
+
 def flag_outliers(df):
     """
     La función marca los outliers 
@@ -21,14 +24,14 @@ def flag_outliers(df):
     df.loc[mask_price_high, 'flag'] = df.loc[mask_price_high, 'flag'].fillna('') + 'Price too high; '
 
     # --- Ambientes ---
-    mask_rooms_low = df['rooms'] < rooms_lower_bound
-    mask_rooms_high = df['rooms'] > rooms_upper_bound
+    mask_rooms_low = df['rooms_final'] < rooms_lower_bound
+    mask_rooms_high = df['rooms_final'] > rooms_upper_bound
     df.loc[mask_rooms_low, 'flag'] = df.loc[mask_rooms_low, 'flag'].fillna('') + 'Not enough rooms; '
     df.loc[mask_rooms_high, 'flag'] = df.loc[mask_rooms_high, 'flag'].fillna('') + 'Too many rooms; '
 
     # --- Superficie ---
-    mask_surface_low = df['m2'] < surface_lower_bound
-    mask_surface_high = df['m2'] > surface_upper_bound
+    mask_surface_low = df['m2_final'] < surface_lower_bound
+    mask_surface_high = df['m2_final'] > surface_upper_bound
     df.loc[mask_surface_low, 'flag'] = df.loc[mask_surface_low, 'flag'].fillna('') + 'Surface too small; '
     df.loc[mask_surface_high, 'flag'] = df.loc[mask_surface_high, 'flag'].fillna('') + 'Surface too large; '
 
