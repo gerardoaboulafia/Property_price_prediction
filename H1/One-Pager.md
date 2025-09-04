@@ -19,3 +19,15 @@ Para la etapa de modelado se seleccionó el algoritmo XGBoost Regressor (Extreme
 Previo al entrenamiento, se dividió el conjunto de datos en subconjuntos de entrenamiento y prueba, y posteriormente se realizó un ajuste de hiperparámetros con el objetivo de mejorar la precisión de las predicciones y evitar el sobreajuste.
 
 El modelo fue evaluado mediante métricas de error como MAE (Mean Absolute Error), RMSE (Root Mean Squared Error) y MAPE (Mean Absolute Percentage Error), las cuales permiten cuantificar la diferencia entre los precios reales y los predichos.
+
+
+## Planificación
+Con el modelo actual se logró una primera aproximación robusta para la predicción de precios de propiedades en la Ciudad de Buenos Aires. Sin embargo, se identificaron varias líneas de trabajo futuras que permitirán escalar, automatizar y mejorar el sistema:
+
+- Rediseño del pipeline con Programación Orientada a Objetos (POO): se busca estructurar el flujo de preprocesamiento y modelado de manera más modular y reutilizable, facilitando la mantenibilidad del código y la incorporación de nuevas funcionalidades.
+
+- Implementación de herramientas de monitoreo: se explorarán soluciones para supervisar el desempeño del modelo en producción, permitiendo detectar caídas en la precisión, identificar sesgos y asegurar la estabilidad de las predicciones en el tiempo.
+
+- Despliegue mediante API y contenedores: el modelo será expuesto a través de una API REST, que permitirá enviar información de una propiedad y recibir como respuesta la predicción de su precio. Para garantizar portabilidad y escalabilidad, se prevé la dockerización del modelo, lo que facilitará su ejecución en distintos entornos de manera eficiente.
+
+- Evaluación de data drift: se establecerán procesos para analizar periódicamente si la distribución de los datos en producción se desvía respecto del dataset original de entrenamiento. Esto permitirá identificar cuándo es necesario reentrenar el modelo para mantener la calidad de las predicciones.
