@@ -1,0 +1,28 @@
+1. **Preparación de datos y del proyecto**
+   - Rediseñar el tratamiento de variables categóricas
+   - Verificar preprocesamiento
+   - Definir alcance del MVP
+   - Sanity Checks
+   - Diseño de riesgos RAG
+   - Generación del roadmap
+
+2. **Modelado**
+   - Verificar arquitectura del modelo
+   - Rediseño del modelo con POO
+   - Rediseño de la pipeline del modelo
+   - Determinar métricas de evaluación del performance
+
+3. **Evaluación y validación**
+   - Evaluar desempeño del modelo con datos nuevos
+   - Informe de procesos llevados a cabo
+   - Evaluar mecanismos de Data Drift
+
+4. **Despliegue y monitoreo**
+   - Chequear diseño y funcionamiento de la API
+   - Determinar herramienta de monitoreo del modelo
+   - Definir herramientas para la interfaz
+   - Crear documentación de los datos
+
+5. **Gestión de riesgos y mejora continua**
+   - Diseño de arquitectura de alto nivel
+   - Definir nuevas fuentes de datos
