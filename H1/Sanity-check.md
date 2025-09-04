@@ -22,4 +22,3 @@ Para el control de calidad, se incorporó una columna de flag que permitió rast
 
 Este proceso de verificación y limpieza garantizó que el conjunto de datos utilizado para entrenar el modelo estuviera libre de inconsistencias graves, mejorando la confiabilidad de las predicciones posteriores.
 
-Esto se encuentra en Pipeline -> Preprocess -> Pycache -> Clean_data
