@@ -31,3 +31,4 @@ Con el modelo actual se logró una primera aproximación robusta para la predicc
 - Despliegue mediante API y contenedores: el modelo será expuesto a través de una API REST, que permitirá enviar información de una propiedad y recibir como respuesta la predicción de su precio. Para garantizar portabilidad y escalabilidad, se prevé la dockerización del modelo, lo que facilitará su ejecución en distintos entornos de manera eficiente.
 
 - Evaluación de data drift: se establecerán procesos para analizar periódicamente si la distribución de los datos en producción se desvía respecto del dataset original de entrenamiento. Esto permitirá identificar cuándo es necesario reentrenar el modelo para mantener la calidad de las predicciones.
+Hola
