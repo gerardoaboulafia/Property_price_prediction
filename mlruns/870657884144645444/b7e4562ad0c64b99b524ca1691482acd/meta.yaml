@@ -1,0 +1,14 @@
+artifact_uri: file:///workspaces/Property_price_prediction/mlruns/870657884144645444/b7e4562ad0c64b99b524ca1691482acd/artifacts
+end_time: 1758225166451
+entry_point_name: ''
+experiment_id: '870657884144645444'
+lifecycle_stage: active
+run_id: b7e4562ad0c64b99b524ca1691482acd
+run_name: test_run
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1758225166440
+status: 3
+tags: []
+user_id: codespace
