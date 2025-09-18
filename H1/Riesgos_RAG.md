@@ -14,3 +14,12 @@ El segundo riesgo es el de código difícil de mantener, que se ubica en nivel A
 Por último, se considera el Model/Data Drift, es decir, los cambios en la distribución de los datos a lo largo del tiempo que pueden afectar la validez del modelo. Este riesgo se clasifica como Verde, dado que su impacto inmediato es bajo. No obstante, la mitigación propuesta incluye el monitoreo periódico del desempeño del modelo, la realización de retraining con datos nuevos y la implementación de tests unitarios para validar el comportamiento del sistema.
 **Métrica:** Determinado porcentaje de predicciones fuera del rango esperado
 **Fecha tentativa:** 16/10/2025
+
+
+# Evaluación de Riesgos (RAG)
+
+| Riesgo | Nivel (RAG) | Mitigación | Métrica | Fecha tentativa |
+|--------|-------------|------------|---------|-----------------|
+| **Calidad de datos** <br> (outliers, superficies irreales, valores faltantes) | 🔴 **Rojo** | - Reglas de negocio para descartar valores irreales <br> - Imputación de valores faltantes <br> - Detección de outliers (superficie, precio, ambientes en rango razonable) | % de datos erróneos detectados en nuevos datos | 02/10/2025 |
+| **Código difícil de mantener** <br> (falta de estructura, baja reutilización) | 🟡 **Amarillo** | - Definir clases y métodos reutilizables <br> - Encapsular el pipeline en objetos <br> - Aplicar principios OOP | Nº de clases usadas + tiempo de compilación | 13/11/2025 |
+| **Model/Data Drift** <br> (cambio en la distribución de datos con el tiempo) | 🟢 **Verde** | - Monitoreo periódico del desempeño <br> - Retraining con datos nuevos <br> - Tests unitarios para validar comportamiento | % de predicciones fuera del rango esperado | 16/10/2025 |
