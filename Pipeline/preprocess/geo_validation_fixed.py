@@ -22,7 +22,7 @@ def validate_geo(data):
     
     if not barrios_path.exists():
         # Fallback to absolute path if relative doesn't work
-        barrios_path = '/Users/gerardoaboulafia/Projects/Property_price_prediction/Pipeline/barrios copy.csv'
+        barrios_path = 'Pipeline/barrios copy.csv'
     
     barrios = gpd.read_file(str(barrios_path))
     barrios['geometry'] = barrios['WKT'].apply(lambda x: shapely.wkt.loads(x))
