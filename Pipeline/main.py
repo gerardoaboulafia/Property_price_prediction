@@ -20,36 +20,68 @@ def main_pipeline():
     # Cargar el dataset
     data = pd.read_csv(input_file)
 
+    # Renombrar columnas del dataset a las que espera el pipeline
+    data = data.rename(columns={
+        "latitud": "lat",
+        "longitud": "lon",
+        "place_l2": "l1",
+        "place_l3": "l2",
+        "place_l4": "l3",
+        "property_rooms": "rooms",
+        "property_surface_total": "surface_total",
+        "property_currency": "currency",
+        "property_title": "title",
+        "operation": "operation_type",
+        "property_price": "price"
+    })
+
     # keep only 'lat,'lon', 'l1', 'l2', 'l3','rooms','surface_total', 'currency', 'title', 'description', 'property_type', 'operation_type','price'
-    data = data[['lat', 'lon', 'l1', 'l2', 'l3', 'rooms', 'surface_total', 'currency', 'title', 'description', 'property_type', 'operation_type', 'price']]
+    data = data[['lat', 'lon', 'l1', 'l2', 'l3', 'rooms', 'surface_total', 'currency', 'title', 'property_type', 'operation_type', 'price']]
 
     # 1. Subetapa de filtrado por currency y l2
-    data = filter_by_currency_place(data)
-
     print("\n")
     print("Filtrando data...")
 
-    # 2. Subetapa de extracción de valores con RegEx
-    data = extract_features_regex(data)
+    data = filter_by_currency_place(data)
 
+    print(data.head())
+
+    # 2. Subetapa de extracción de valores con RegEx
     print("Extrayendo features con expresiones regulares...")
 
-    # 3. Subetapa de validación geográfica
-    data = validate_geo(data)
+    data = extract_features_regex(data)
 
+    print(data.head())
+
+    # 3. Subetapa de validación geográfica
     print("Validando que los departamentos se encuentren en CABA...")
 
+    data = validate_geo(data)
+
+    print(data.head())
+
+    
     # 4. Subetapa de cálculo de distancia al subte más cercano
     print("Calculando la distancia al subte más cercano...")
-    data = calculate_subte_distance(data)
+    data = calculate_subte_distance(
+    data,
+    r"C:\Users\mical\OneDrive - UCA\UCA\2025\2do cuatrimestre\Laboratorio II\Property_price_prediction\Pipeline\estaciones-de-subte copy.csv"
+)
+    
+    print(data.head())
 
     # keep only relevant columns: place_l3	type	rooms_final	m2_final	distancia_subte_cercano    price
-    data = data[['rooms_final', 'm2_final', 'distancia_subte_cercano', 'l3', 'property_type', 'price']]
+    data = data[['rooms_final', 'm2_final', 'distancia_subte_cercano', 'l3', 'property_type', 'price', 'flag']]
 
     # 5. Subetapa de limpieza de outliers
     print("Limpiando outliers...")
     data = clean_data_outliers(data)
 
+    print(data.head())
+
+    # Guardar el dataset limpio
+    output_file = "data/processed/datos_limpios_1.csv"
+    data.to_csv(output_file, index=False)
 
     # Separamos los datos con los que se trabajará (aquellas filas en donde 'flag' es None) 
     valid_data = data[data['flag'].isnull()]
@@ -200,4 +232,4 @@ def start_pygame_interface():
     pygame.quit()
 
 if __name__ == "__main__":
-    start_pygame_interface()
+    main_pipeline()

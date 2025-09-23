@@ -10,7 +10,7 @@ def filter_by_currency_place(data):
     
     # Create separate flag conditions
     currency_flag = data['currency'] != 'USD'
-    location_flag = data['l2'] != 'Capital Federal'
+    location_flag = data['l1'] != 'Capital Federal'
     property_type_flag = ~data['property_type'].isin(['Departamento', 'Casa', 'PH'])
 
     # Build flag messages by combining conditions

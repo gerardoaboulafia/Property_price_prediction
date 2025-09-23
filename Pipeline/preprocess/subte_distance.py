@@ -17,7 +17,8 @@ def calculate_subte_distance(data: pd.DataFrame, estaciones_csv_path: str) -> pd
     if not {'lat', 'lon'}.issubset(subte.columns):
         raise ValueError("El CSV de estaciones debe tener columnas 'lat' y 'lon'.")
     
-    mask_ok = df['flag'].isna() & df[['lat', 'lon']].notna().all(axis=1)
+    mask_ok = df[['lat', 'lon']].notna().all(axis=1)
+
     
     if 'distancia_subte_cercano' not in df.columns:
         df['distancia_subte_cercano'] = np.nan
@@ -35,4 +36,5 @@ def calculate_subte_distance(data: pd.DataFrame, estaciones_csv_path: str) -> pd
         
         df.loc[mask_ok, 'distancia_subte_cercano'] = (dists_rad.flatten() * R)
     
+
     return df

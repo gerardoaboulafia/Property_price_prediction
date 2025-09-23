@@ -22,9 +22,19 @@ def validate_geo(data):
     
     if not barrios_path.exists():
         # Fallback to absolute path if relative doesn't work
-        barrios_path = 'Pipeline/barrios copy.csv'
+        barrios_path = Path("C:/Users/mical/OneDrive - UCA/UCA/2025/2do cuatrimestre/Laboratorio II/Property_price_prediction/Pipeline/barrios copy.csv")
     
-    barrios = gpd.read_file(str(barrios_path))
+    # Leer CSV de barrios
+    barrios = pd.read_csv(barrios_path, encoding="latin1")
+
+    # Convertir columna WKT en geometrías
+    barrios['geometry'] = barrios['WKT'].apply(shapely.wkt.loads)
+
+    # Pasar a GeoDataFrame
+    barrios = gpd.GeoDataFrame(barrios, geometry='geometry')
+
+    # Crear polígono combinado
+    combined_polygon = unary_union(barrios['geometry'])
     barrios['geometry'] = barrios['WKT'].apply(lambda x: shapely.wkt.loads(x))
     combined_polygon = unary_union(barrios['geometry'])
 
