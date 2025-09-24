@@ -1,4 +1,4 @@
-from db_utils import get_connection, download_from_mysql, upload_dataframe_to_mysql
+from preprocess.db_utils import get_connection, download_from_mysql, upload_dataframe_to_mysql
 from preprocess.filter_data import filter_by_currency_place
 from preprocess.regex_extraction import extract_features_regex
 from preprocess.geo_validation import validate_geo

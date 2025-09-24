@@ -19,7 +19,7 @@ def upload_csv_to_mysql(csv_path, table_name, connection):
     Carga un CSV a MySQL en la tabla especificada.
     Sobrescribe si la tabla ya existe.
     """
-    df = pd.read_csv(csv_path)
+    df = pd.read_csv(csv_path, low_memory=False)
 
     cursor = connection.cursor()
     # Crear tabla genérica (ajustá los tipos según tu necesidad)
