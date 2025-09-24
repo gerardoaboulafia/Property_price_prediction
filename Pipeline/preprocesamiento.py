@@ -1,21 +1,21 @@
-import pandas as pd
-import warnings
-
+from db_utils import get_connection, download_from_mysql, upload_dataframe_to_mysql
 from preprocess.filter_data import filter_by_currency_place
 from preprocess.regex_extraction import extract_features_regex
 from preprocess.geo_validation import validate_geo
 from preprocess.subte_distance import calculate_subte_distance
 from preprocess.clean_outliers import clean_data_outliers
+import pandas as pd
+import warnings
 
 warnings.simplefilter(action='ignore', category=Warning)
 
-# Función principal del pipeline de preprocesamiento
-def preprocess_pipeline():
-    # Pedir la ubicación del archivo por consola
-    input_file = input("Introduce la ubicación del archivo de datos: ")
 
-    # Cargar el dataset
-    data = pd.read_csv(input_file)
+def preprocess_pipeline():
+    # 1. Conexión a MySQL
+    conn = get_connection(user="labo_ame_agus", password="ameagusmica", host="172.29.208.1", port=3307, database="laboratorioII")
+
+    # 2. Descargar dataset original desde MySQL
+    data = download_from_mysql("raw_data", conn)
 
     # Renombrar columnas del dataset a las que espera el pipeline
     data = data.rename(columns={
@@ -47,16 +47,12 @@ def preprocess_pipeline():
 
     data = filter_by_currency_place(data)
 
-    print(data.head())
-
     # 2. Extracción de features con expresiones regulares
     print("\n")
     print("Extrayendo features con expresiones regulares...")
     print("\n")
 
     data = extract_features_regex(data)
-    
-    print(data.head())
 
     # 3. Validación geográfica
     print("\n")
@@ -64,8 +60,7 @@ def preprocess_pipeline():
     print("\n")
 
     data = validate_geo(data)
-    
-    print(data.head())
+
 
     # 4. Cálculo de distancia al subte más cercano
     print("\n")
@@ -76,7 +71,6 @@ def preprocess_pipeline():
     data,
     r"C:\Users\mical\OneDrive - UCA\UCA\2025\2do cuatrimestre\Laboratorio II\Property_price_prediction\Pipeline\estaciones-de-subte copy.csv"
 )
-    print(data.head())
 
     # Mantener solo las columnas finales relevantes
     data = data[['rooms_final', 'm2_final', 'distancia_subte_cercano',
@@ -88,13 +82,12 @@ def preprocess_pipeline():
     print("\n")
     data = clean_data_outliers(data)
 
-    print(data.head())
+    # 5. Subir a MySQL directamente
+    upload_dataframe_to_mysql(data, "processed_data", conn)
 
-    # Guardar el dataset limpio
-    output_file = "data/processed/datos_limpios.csv"
-    data.to_csv(output_file, index=False)
-
-    print(f"\nPreprocesamiento completado. Datos guardados en {output_file}")
+    # 6. Cerrar conexión
+    conn.close()
+    print("Preprocesamiento completado y datos subidos a MySQL (tabla processed_data)")
 
 if __name__ == "__main__":
     preprocess_pipeline()
