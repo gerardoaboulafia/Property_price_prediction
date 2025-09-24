@@ -55,7 +55,5 @@ def validate_geo(data):
     # Limpiar separadores y normalizar flags vacíos a None
     data['flag'] = data['flag'].str.rstrip('; ').replace({'': None})
 
-    p = Point(-58.429204, -34.598973)  # lon, lat
-    print(combined_polygon.contains(p))
 
     return data

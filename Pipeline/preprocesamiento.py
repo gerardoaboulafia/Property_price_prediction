@@ -42,7 +42,7 @@ def preprocess_pipeline():
     # 1. Filtrado por moneda y ubicación
 
     print("\n")
-    print("Extrayendo features con expresiones regulares...")
+    print("Filtrando los datos necesarios...")
     print("\n")
 
     data = filter_by_currency_place(data)
@@ -67,6 +67,10 @@ def preprocess_pipeline():
     print("Calculando la distancia al subte más cercano...")
     print("\n")
 
+    data['lat'] = pd.to_numeric(data['lat'], errors='coerce')
+    data['lon'] = pd.to_numeric(data['lon'], errors='coerce')
+
+
     data = calculate_subte_distance(
     data,
     r"C:\Users\mical\OneDrive - UCA\UCA\2025\2do cuatrimestre\Laboratorio II\Property_price_prediction\Pipeline\estaciones-de-subte copy.csv"
@@ -77,6 +81,12 @@ def preprocess_pipeline():
                  'l2', 'property_type', 'price', 'flag']]
 
     # 5. Limpieza de outliers
+
+    # Asegurar columnas numéricas
+    for col in ['price', 'rooms_final', 'm2_final']:
+        data[col] = pd.to_numeric(data[col], errors='coerce')
+
+
     print("\n")
     print("Limpiando outliers...")
     print("\n")
