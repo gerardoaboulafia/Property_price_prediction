@@ -143,7 +143,7 @@ El pipeline de preprocesamiento realiza los siguientes pasos:
 
 ## **7\. Pruebas**
 
-Puedes usar el script de prueba para validar el funcionamiento de la API: `python test_api.py`
+Puedes usar el script de prueba para validar el funcionamiento de la API a través del Powershell: `python test_api.py`
 
 Este script prueba:
 
