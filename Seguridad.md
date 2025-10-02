@@ -20,15 +20,8 @@ Aunque nuestro dataset no incluye información personal sensible como DNI, email
 
 Por esta razón, la API fue diseñada para **usar estos datos internamente para el modelo, pero nunca exponerlos directamente en la respuesta**.  
 
-### 3. Recomendaciones para producción
-En un entorno productivo se deberían aplicar medidas adicionales:
-- **Anonimizar coordenadas**: Redondear `lat/lon` a 3 decimales o transformarlas a nivel de manzana/barrio.  
-- **Sanear textos**: Evitar devolver direcciones exactas o referencias personales en `title` o `description`.  
-- **Protección en tránsito**: Asegurar que toda comunicación cliente-servidor ocurra mediante **HTTPS** para evitar fugas de datos en redes inseguras.  
-- **Control de acceso**: Limitar el uso de la API mediante autenticación (ej. tokens o API keys) en caso de exposición pública.  
-- **Logging seguro**: Si se registran requests/responses, anonimizar datos sensibles antes de guardarlos en logs.  
 
-### 4. Compromiso de la API
+### 3. Compromiso de la API
 Gracias a este diseño, nuestra API:
 - **Cumple con el principio de mínima exposición** → solo devuelve lo necesario para la predicción.  
 - **Separa claramente inputs y outputs** → lo sensible se usa internamente, lo agregado se devuelve al usuario.  
