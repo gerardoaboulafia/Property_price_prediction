@@ -148,7 +148,7 @@ def preprocess_data(property_data: PropertyInput) -> pd.DataFrame:
     data = calculate_subte_distance(data, str(SUBTE_STATIONS_PATH))
     
     # 5. Keep only relevant columns (as in notebook)
-    data = data[['rooms_final', 'm2_final', 'distancia_subte_cercano', 'l3', 'property_type', 'price', 'flag']]
+    data = data[['rooms_final', 'm2_final', 'distancia_subte_cercano', 'l2', 'property_type', 'price', 'flag']]
     
     # 6. Clean outliers
     data = clean_data_outliers(data)

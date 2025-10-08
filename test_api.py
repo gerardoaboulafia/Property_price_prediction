@@ -27,8 +27,8 @@ def test_prediction():
         "start_date": "2023-01-01",
         "end_date": "2023-12-31", 
         "created_on": "2023-01-01",
-        "lat": -58.4200,  # Coordenadas conocidas de Palermo (será lon después del swap)
-        "lon": -34.5900,  # (será lat después del swap)
+        "lat": -34.5900,  # latitud de Palermo
+        "lon": -58.4200,  # longitud de Palermo 
         "l1": "Argentina",
         "l2": "Capital Federal",
         "l3": "Palermo",
@@ -63,8 +63,8 @@ def test_invalid_property():
         "start_date": "2023-01-01",
         "end_date": "2023-12-31",
         "created_on": "2023-01-01",
-        "lat": -34.6037,  # Este será lon después del swap
-        "lon": -58.3816,  # Este será lat después del swap
+        "lat": -34.6037,  # latitud de CABA
+        "lon": -58.3816,  # longitud de CABA
         "l1": "Argentina",
         "l2": "Capital Federal", 
         "l3": "Palermo",
@@ -107,8 +107,8 @@ def test_prediction_with_regex_extraction():
         "start_date": "2023-01-01",
         "end_date": "2023-12-31",
         "created_on": "2023-01-01",
-        "lat": -58.4387,  # Coordenadas de Villa Crespo (será lon después del swap)
-        "lon": -34.5875,  # (será lat después del swap)
+        "lat": -34.5875,  # latitud de Villa Crespo
+        "lon": -58.4387,  # longitud de Villa Crespo
         "l1": "Argentina",
         "l2": "Capital Federal",
         "l3": "Villa Crespo",
