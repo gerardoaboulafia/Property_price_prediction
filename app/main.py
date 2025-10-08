@@ -13,12 +13,11 @@ pipeline_dir = Path(__file__).parent.parent / "Pipeline"
 sys.path.append(str(pipeline_dir))
 
 # Import preprocessing functions
-from Pipeline.preprocess.filter_data import filter_by_currency_place
-from Pipeline.preprocess.regex_extraction import extract_features_regex
-from Pipeline.preprocess.geo_validation_fixed import validate_geo
-from Pipeline.preprocess.subte_distance import calculate_subte_distance
-from Pipeline.preprocess.clean_outliers import clean_data_outliers
-
+from preprocess.filter_data import filter_by_currency_place
+from preprocess.regex_extraction import extract_features_regex
+from preprocess.geo_validation import validate_geo
+from preprocess.subte_distance import calculate_subte_distance
+from preprocess.clean_outliers import clean_data_outliers
 
 app = FastAPI(
     title="Property Price Prediction API",
@@ -27,7 +26,7 @@ app = FastAPI(
 )
 
 # Load the trained model
-MODEL_PATH = pipeline_dir / "models" / "xgb_pipeline2.pkl"
+MODEL_PATH = pipeline_dir / "models" / "model_api_test.pkl"
 SUBTE_STATIONS_PATH = pipeline_dir / "estaciones-de-subte copy.csv"
 
 try:
