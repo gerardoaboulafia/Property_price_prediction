@@ -27,11 +27,11 @@ def test_prediction():
         "start_date": "2023-01-01",
         "end_date": "2023-12-31", 
         "created_on": "2023-01-01",
-        "lat": -58.4200, # latitud de Palermo
-        "lon": -34.5900,  # longitud de Palermo 
+        "lat":  -34.3614, # latitud de Palermo
+        "lon": -58.2254, # longitud de Palermo 
         "l1": "Argentina",
         "l2": "Capital Federal",
-        "l3": "Palermo",
+        "l3": "San Nicolás",
         "l4": None,
         "l5": None,
         "l6": None,

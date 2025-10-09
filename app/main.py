@@ -28,6 +28,7 @@ app = FastAPI(
 # Load the trained model
 MODEL_PATH = pipeline_dir / "models" / "model_api_test.pkl"
 SUBTE_STATIONS_PATH = pipeline_dir / "estaciones-de-subte copy.csv"
+BARRIOS_CSV_PATH = pipeline_dir / "barrios copy.csv"
 
 try:
     model = joblib.load(MODEL_PATH)
@@ -72,8 +73,8 @@ class PropertyInput(BaseModel):
                 "start_date": "2023-01-01",
                 "end_date": "2023-12-31",
                 "created_on": "2023-01-01",
-                "lat": -58.4200,  # Coordenadas conocidas de Palermo (será lon después del swap)
-                "lon": -34.5900,  # (será lat después del swap)
+                "lat": -34.5900,  # Coordenadas conocidas de Palermo (será lon después del swap)
+                "lon": -58.4200,  # (será lat después del swap)
                 "l1": "Argentina",
                 "l2": "Capital Federal",
                 "l3": "Palermo",
@@ -131,9 +132,18 @@ def preprocess_data(property_data: PropertyInput) -> pd.DataFrame:
     
     # Apply the same transformations as in the notebook
     # IMPORTANT: Swap lat and lon (exactly as in notebook) - but only if both are not None
+    # Verificar coordenadas antes de hacer el swap
+    print(f"Antes del intercambio: lat = {data['lat'].iloc[0]}, lon = {data['lon'].iloc[0]}")
+
+    # Swap lat and lon (solo si ambas están presentes)
     #if not (pd.isna(data['lat'].iloc[0]) or pd.isna(data['lon'].iloc[0])):
     #    data = data.rename(columns={'lat': 'temp_lat', 'lon': 'lat'})
     #    data = data.rename(columns={'temp_lat': 'lon'})
+
+
+    # Verificar coordenadas después del swap
+    print(f"Después del intercambio: lat = {data['lat'].iloc[0]}, lon = {data['lon'].iloc[0]}")
+
     
     # 1. Filter by currency and place
     data = filter_by_currency_place(data)
@@ -141,8 +151,11 @@ def preprocess_data(property_data: PropertyInput) -> pd.DataFrame:
     # 2. Extract features using RegEx
     data = extract_features_regex(data)
     
+    # Verificar las coordenadas antes de validarlas
+    print(f"Coordenada a verificar: lat = {data['lat'].iloc[0]}, lon = {data['lon'].iloc[0]}")
+
     # 3. Validate geography
-    data = validate_geo(data)
+    data = validate_geo(data, str(BARRIOS_CSV_PATH))
     
     # 4. Calculate distance to nearest subway station
     data = calculate_subte_distance(data, str(SUBTE_STATIONS_PATH))
@@ -231,7 +244,7 @@ async def model_info():
         info = {
             "model_type": type(model).__name__,
             "model_path": str(MODEL_PATH),
-            "expected_features": ["place_l3", "type", "rooms_final", "m2_final", "distancia_subte_cercano"]
+            "expected_features": ['rooms_final', 'm2_final', 'distancia_subte_cercano', 'l2', 'property_type', 'price', 'flag']
         }
         
         # If it's a pipeline, try to get more details
