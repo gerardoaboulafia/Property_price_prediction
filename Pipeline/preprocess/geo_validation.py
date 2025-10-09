@@ -39,6 +39,12 @@ def validate_geo(data):
 
     # Evaluar puntos sólo donde hay coords
     if mask_coords_ok.any():
+
+        print("Coordenadas recibidas para validación:")
+        print(data.loc[mask_coords_ok, ['lat', 'lon', 'l2', 'l3']])
+        print("Ejemplo punto:", Point(data.loc[mask_coords_ok, 'lon'].iloc[0], data.loc[mask_coords_ok, 'lat'].iloc[0]))
+        print("Polígono contiene el punto:", combined_polygon.contains(Point(data.loc[mask_coords_ok, 'lon'].iloc[0], data.loc[mask_coords_ok, 'lat'].iloc[0])))
+        
         puntos = data.loc[mask_coords_ok, ['lat', 'lon']].apply(
             lambda r: Point(r['lon'], r['lat']), axis=1
         )

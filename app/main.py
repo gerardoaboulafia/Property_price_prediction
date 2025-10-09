@@ -131,9 +131,9 @@ def preprocess_data(property_data: PropertyInput) -> pd.DataFrame:
     
     # Apply the same transformations as in the notebook
     # IMPORTANT: Swap lat and lon (exactly as in notebook) - but only if both are not None
-    if not (pd.isna(data['lat'].iloc[0]) or pd.isna(data['lon'].iloc[0])):
-        data = data.rename(columns={'lat': 'temp_lat', 'lon': 'lat'})
-        data = data.rename(columns={'temp_lat': 'lon'})
+    #if not (pd.isna(data['lat'].iloc[0]) or pd.isna(data['lon'].iloc[0])):
+    #    data = data.rename(columns={'lat': 'temp_lat', 'lon': 'lat'})
+    #    data = data.rename(columns={'temp_lat': 'lon'})
     
     # 1. Filter by currency and place
     data = filter_by_currency_place(data)

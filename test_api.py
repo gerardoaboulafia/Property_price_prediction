@@ -27,8 +27,8 @@ def test_prediction():
         "start_date": "2023-01-01",
         "end_date": "2023-12-31", 
         "created_on": "2023-01-01",
-        "lat": -34.5900,  # latitud de Palermo
-        "lon": -58.4200,  # longitud de Palermo 
+        "lat": -58.4200, # latitud de Palermo
+        "lon": -34.5900,  # longitud de Palermo 
         "l1": "Argentina",
         "l2": "Capital Federal",
         "l3": "Palermo",
