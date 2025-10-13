@@ -50,6 +50,9 @@ def validate_geo(data, barrios_path: str) -> pd.DataFrame:
         
         # Asignar la validación a la columna 'en_capital'
         data.loc[mask_coords_ok, 'en_capital'] = inside
+
+        print("Resultados de validación geográfica (True = dentro de CABA, False = fuera de CABA):")
+        print(data.loc[mask_coords_ok, ['lat', 'lon', 'en_capital']])
         
         # Flagear fuera de CABA solo si 'inside' es False
         mask_outside = mask_coords_ok & (~inside)

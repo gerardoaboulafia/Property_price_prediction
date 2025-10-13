@@ -27,8 +27,8 @@ def test_prediction():
         "start_date": "2023-01-01",
         "end_date": "2023-12-31", 
         "created_on": "2023-01-01",
-        "lat":  34.5811, # latitud de Palermo
-        "lon": -58.4210, # longitud de Palermo 
+        "lat": -34.6037,  # latitud de CABA
+        "lon": -58.3816,  # longitud de CABA
         "l1": "Capital Federal",
         "l2": "Palermo",
         "l3": "Palermo Soho",
@@ -51,7 +51,13 @@ def test_prediction():
     
     response = requests.post(f"{BASE_URL}/predict", json=sample_property)
     print("Prediction Response:")
-    print(json.dumps(response.json(), indent=2))
+    try:
+        print(json.dumps(response.json(), indent=2))
+    except Exception as e:
+        print(f"⚠️ Error decoding JSON: {e}")
+        print(f"Response status: {response.status_code}")
+        print(f"Response text:\n{response.text}")
+
     print()
 
 def test_invalid_property():
@@ -109,8 +115,8 @@ def test_prediction_with_regex_extraction():
         "created_on": "2023-01-01",
         "lat": -34.5875,  # latitud de Villa Crespo
         "lon": -58.4387,  # longitud de Villa Crespo
-        "l1": "Argentina",
-        "l2": "Capital Federal",
+        "l1": "Capital Federal",
+        "l2": "Villa Crespo",
         "l3": "Villa Crespo",
         "l4": None,
         "l5": None,

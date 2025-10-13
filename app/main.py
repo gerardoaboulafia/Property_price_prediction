@@ -198,6 +198,7 @@ async def predict_price(property_data: PropertyInput):
         # Check if data is valid for prediction (no flags)
         is_valid = processed_data['flag'].isnull().iloc[0]
         flag_value = processed_data['flag'].iloc[0] if not is_valid else None
+
         
         if not is_valid:
             return PredictionOutput(
@@ -209,13 +210,33 @@ async def predict_price(property_data: PropertyInput):
         
         # Prepare features for prediction (following notebook transformations)
         valid_data = processed_data[processed_data['flag'].isnull()]
-        X_features = valid_data.drop(columns=['price', 'flag'])
+        X_features = valid_data.drop(columns=['price'])
+
+        # Convertir tipos numéricos primero y limpiar
+        for col in ["rooms_final", "m2_final", "distancia_subte_cercano"]:
+            X_features[col] = pd.to_numeric(X_features[col], errors="coerce")
+
+        # Reemplazar valores no finitos en columnas numéricas
+        X_features[["rooms_final", "m2_final", "distancia_subte_cercano"]] = \
+            X_features[["rooms_final", "m2_final", "distancia_subte_cercano"]].replace([np.inf, -np.inf], np.nan).fillna(0)
+
+        # Asegurar que 'flag' exista y sea string
+        if 'flag' not in X_features.columns:
+            X_features['flag'] = "None"
+
+        # Rellenar NaN en las categóricas antes de convertir
+        for col in ["l2", "property_type", "flag"]:
+            if col in X_features.columns:
+                X_features[col] = X_features[col].fillna("None").astype("category")
+
         
         # Rename columns to match model expectations
-        X_features = X_features.rename(columns={
-            'l3': 'place_l3',
-            'property_type': 'type'
-        })
+        #X_features = X_features.rename(columns={
+        #    'l3': 'place_l3',
+        #    'property_type': 'type'
+        #})
+
+        
         
         # Make prediction
         prediction = model.predict(X_features)[0]
