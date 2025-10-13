@@ -42,6 +42,10 @@ def validate_geo(data, barrios_path: str) -> pd.DataFrame:
             lambda r: Point(r['lon'], r['lat']), axis=1
         )
         
+        # Imprimir las coordenadas antes de validarlas
+        print(f"Ejemplo punto: POINT ({data.loc[mask_coords_ok, 'lon'].iloc[0]} {data.loc[mask_coords_ok, 'lat'].iloc[0]})")
+
+
         inside = puntos.apply(lambda p: combined_polygon.contains(p) or combined_polygon.touches(p))
         
         # Asignar la validación a la columna 'en_capital'

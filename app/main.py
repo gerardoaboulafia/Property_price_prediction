@@ -133,7 +133,7 @@ def preprocess_data(property_data: PropertyInput) -> pd.DataFrame:
     # Apply the same transformations as in the notebook
     # IMPORTANT: Swap lat and lon (exactly as in notebook) - but only if both are not None
     # Verificar coordenadas antes de hacer el swap
-    print(f"Antes del intercambio: lat = {data['lat'].iloc[0]}, lon = {data['lon'].iloc[0]}")
+    #print(f"Antes del intercambio: lat = {data['lat'].iloc[0]}, lon = {data['lon'].iloc[0]}")
 
     # Swap lat and lon (solo si ambas están presentes)
     #if not (pd.isna(data['lat'].iloc[0]) or pd.isna(data['lon'].iloc[0])):
@@ -142,7 +142,7 @@ def preprocess_data(property_data: PropertyInput) -> pd.DataFrame:
 
 
     # Verificar coordenadas después del swap
-    print(f"Después del intercambio: lat = {data['lat'].iloc[0]}, lon = {data['lon'].iloc[0]}")
+    #print(f"Después del intercambio: lat = {data['lat'].iloc[0]}, lon = {data['lon'].iloc[0]}")
 
     
     # 1. Filter by currency and place
