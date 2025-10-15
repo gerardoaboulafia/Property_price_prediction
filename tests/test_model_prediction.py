@@ -23,3 +23,6 @@ def test_model_prediction_shape():
     
     # Validar la forma de salida
     assert y_pred.shape == (1,), f"La forma esperada es (1,), pero fue {y_pred.shape}"
+
+#para que corra este test hay que correr: pytest -v tests/test_model_prediction.py
+#en la terminal!!!!
