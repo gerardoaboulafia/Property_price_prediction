@@ -6,54 +6,67 @@ import pandas as pd
 import shapely.wkt
 
 
-def validate_geo(data):
+def validate_geo(data, barrios_path: str) -> pd.DataFrame:
     """
     La función validate_geo valida la ubicación geográfica de las propiedades.
     Toma como parámetro un DataFrame de pandas.
     Asume que las columnas 'lat' y 'lon' existen en el DataFrame.
     Devuelve el DataFrame con los casos flageados.
     """
-
-    barrios_path = Path("C:/Users/mical/OneDrive - UCA/UCA/2025/2do cuatrimestre/Laboratorio II/Property_price_prediction/Pipeline/barrios copy.csv")
-    #barrios = gpd.read_file('Pipeline/barrios copy.csv')
+    
+    barrios_path = Path(barrios_path)
     # Leer CSV de barrios
     barrios = pd.read_csv(barrios_path, encoding="latin1")
-
+    
     # Convertir columna WKT en geometrías
     barrios['geometry'] = barrios['WKT'].apply(shapely.wkt.loads)
-
+    
     # Pasar a GeoDataFrame
     barrios = gpd.GeoDataFrame(barrios, geometry='geometry', crs="EPSG:4326")
-
+    
     # Crear polígono combinado
     combined_polygon = unary_union(barrios['geometry'])
-
-    barrios['geometry'] = barrios['WKT'].apply(lambda x: shapely.wkt.loads(x))
-    combined_polygon = unary_union(barrios['geometry'])
-
+    
     # Máscaras de coordenadas presentes / faltantes
     mask_coords_ok = data[['lat', 'lon']].notna().all(axis=1)
-
+    
     # Inicializar en_capital como NaN y luego completar
     data['en_capital'] = pd.NA
-
+    
     # Evaluar puntos sólo donde hay coords
     if mask_coords_ok.any():
+        print("Coordenadas recibidas para validación:")
+        print(data.loc[mask_coords_ok, ['lat', 'lon', 'l2', 'l3']])
+        
         puntos = data.loc[mask_coords_ok, ['lat', 'lon']].apply(
             lambda r: Point(r['lon'], r['lat']), axis=1
         )
+        
+        # Imprimir las coordenadas antes de validarlas
+        print(f"Ejemplo punto: POINT ({data.loc[mask_coords_ok, 'lon'].iloc[0]} {data.loc[mask_coords_ok, 'lat'].iloc[0]})")
+
+
         inside = puntos.apply(lambda p: combined_polygon.contains(p) or combined_polygon.touches(p))
-        # Si tocás el borde, lo consideramos dentro (contains excluye el borde)
+        
+        # Asignar la validación a la columna 'en_capital'
         data.loc[mask_coords_ok, 'en_capital'] = inside
 
-        # Flagear fuera de CABA
+        print("Resultados de validación geográfica (True = dentro de CABA, False = fuera de CABA):")
+        print(data.loc[mask_coords_ok, ['lat', 'lon', 'en_capital']])
+        
+        # Flagear fuera de CABA solo si 'inside' es False
         mask_outside = mask_coords_ok & (~inside)
+        
+        # Si está fuera de CABA, asignar el flag "Not in Capital Federal"
         data.loc[mask_outside, 'flag'] = (
             data.loc[mask_outside, 'flag'].fillna('') + 'Not in Capital Federal (polygon); '
         )
-
+        
+        # Si está dentro de CABA, asegurarse de que no tenga el flag "Not in Capital Federal"
+        mask_inside = mask_coords_ok & inside
+        data.loc[mask_inside, 'flag'] = data.loc[mask_inside, 'flag'].fillna('')
+    
     # Limpiar separadores y normalizar flags vacíos a None
     data['flag'] = data['flag'].str.rstrip('; ').replace({'': None})
-
-
+    
     return data

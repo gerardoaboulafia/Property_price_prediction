@@ -13,7 +13,7 @@ def load_clean_data():
     conn = get_connection(
         user="labo_ame_agus", 
         password="ameagusmica", 
-        host="172.29.208.1", 
+        host="localhost", 
         port=3307, 
         database="laboratorioII"
     )
@@ -85,13 +85,14 @@ def train_new_model(X, y, params, model_name="xgboost_model"):
     
     return model, rmse, r2
 
+
 # 5. Loggear en MLflow
-def log_with_mlflow(model, rmse, r2, model_name):
+def log_with_mlflow(model, rmse, r2, model_name, register=False, registry_name="modelo_api_p"):
     mlflow.set_tracking_uri("http://localhost:5000")
     mlflow.set_experiment("xgboost_models")  # Usamos el mismo experimento
 
-    with mlflow.start_run(run_name=model_name):  # Nombre del run cambiado
-        # Log de parámetros principales (si están en el modelo)
+    with mlflow.start_run(run_name=model_name):
+        # Log de parámetros principales
         for k, v in model.get_params().items():
             mlflow.log_param(k, v)
 
@@ -99,10 +100,18 @@ def log_with_mlflow(model, rmse, r2, model_name):
         mlflow.log_metric("rmse", rmse)
         mlflow.log_metric("r2", r2)
 
-        # Guardar el modelo como artefacto
-        mlflow.sklearn.log_model(model, name="model")
+        # Guardar modelo como artefacto
+        if register:
+            mlflow.sklearn.log_model(
+                model, 
+                name="model",
+                registered_model_name=registry_name
+            )
+        else:
+            mlflow.sklearn.log_model(model, name="model")
 
-        print(f"Modelo loggeado en MLflow con nombre '{model_name}' con RMSE={rmse:.2f} y R2={r2:.2f}")
+        print(f"Modelo loggeado en MLflow con nombre '{model_name}' (Registry={register}) con RMSE={rmse:.2f} y R2={r2:.2f}")
+
 
 if __name__ == "__main__":
     data = load_clean_data()
@@ -147,12 +156,12 @@ if __name__ == "__main__":
     }
     X, y = prepare_features(data)
     # Entrenar varios modelos con diferentes hiperparámetros
-    model_0, rmse_0, r2_0 = train_new_model(X, y, params_0, model_name="xgboost_retrained_with_pkl_params")
-    model_1, rmse_1, r2_1 = train_new_model(X, y, params_1, model_name="xgboost_model_1")
+    #model_0, rmse_0, r2_0 = train_new_model(X, y, params_0, model_name="xgboost_retrained_with_pkl_params")
+    #model_1, rmse_1, r2_1 = train_new_model(X, y, params_1, model_name="xgboost_model_1")
     model_2, rmse_2, r2_2 = train_new_model(X, y, params_2, model_name="xgboost_model_2")
-    model_3, rmse_3, r2_3 = train_new_model(X, y, params_3, model_name="xgboost_model_3")
+    #model_3, rmse_3, r2_3 = train_new_model(X, y, params_3, model_name="xgboost_model_3")
     # Subir los modelos a MLflow
-    log_with_mlflow(model_0, rmse_0, r2_0, model_name="xgboost_retrained_with_pkl_params")
-    log_with_mlflow(model_1, rmse_1, r2_1, model_name="xgboost_model_1")
-    log_with_mlflow(model_2, rmse_2, r2_2, model_name="xgboost_model_2")
-    log_with_mlflow(model_3, rmse_3, r2_3, model_name="xgboost_model_3")
+    #log_with_mlflow(model_0, rmse_0, r2_0, model_name="xgboost_retrained_with_pkl_params")
+    #log_with_mlflow(model_1, rmse_1, r2_1, model_name="xgboost_model_1")
+    log_with_mlflow(model_2, rmse_2, r2_2, model_name="xgboost_model_2", register=True, registry_name="modelo_api_p")
+    #log_with_mlflow(model_3, rmse_3, r2_3, model_name="xgboost_model_3")

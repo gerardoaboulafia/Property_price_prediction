@@ -15,7 +15,7 @@ sys.path.append(str(pipeline_dir))
 # Import preprocessing functions
 from preprocess.filter_data import filter_by_currency_place
 from preprocess.regex_extraction import extract_features_regex
-from preprocess.geo_validation_fixed import validate_geo
+from preprocess.geo_validation import validate_geo
 from preprocess.subte_distance import calculate_subte_distance
 from preprocess.clean_outliers import clean_data_outliers
 
@@ -26,8 +26,9 @@ app = FastAPI(
 )
 
 # Load the trained model
-MODEL_PATH = pipeline_dir / "models" / "xgb_pipeline2.pkl"
+MODEL_PATH = pipeline_dir / "models" / "model_api_test.pkl"
 SUBTE_STATIONS_PATH = pipeline_dir / "estaciones-de-subte copy.csv"
+BARRIOS_CSV_PATH = pipeline_dir / "barrios copy.csv"
 
 try:
     model = joblib.load(MODEL_PATH)
@@ -72,8 +73,8 @@ class PropertyInput(BaseModel):
                 "start_date": "2023-01-01",
                 "end_date": "2023-12-31",
                 "created_on": "2023-01-01",
-                "lat": -58.4200,  # Coordenadas conocidas de Palermo (será lon después del swap)
-                "lon": -34.5900,  # (será lat después del swap)
+                "lat": -34.5900,  # Coordenadas conocidas de Palermo (será lon después del swap)
+                "lon": -58.4200,  # (será lat después del swap)
                 "l1": "Argentina",
                 "l2": "Capital Federal",
                 "l3": "Palermo",
@@ -131,9 +132,18 @@ def preprocess_data(property_data: PropertyInput) -> pd.DataFrame:
     
     # Apply the same transformations as in the notebook
     # IMPORTANT: Swap lat and lon (exactly as in notebook) - but only if both are not None
-    if not (pd.isna(data['lat'].iloc[0]) or pd.isna(data['lon'].iloc[0])):
-        data = data.rename(columns={'lat': 'temp_lat', 'lon': 'lat'})
-        data = data.rename(columns={'temp_lat': 'lon'})
+    # Verificar coordenadas antes de hacer el swap
+    #print(f"Antes del intercambio: lat = {data['lat'].iloc[0]}, lon = {data['lon'].iloc[0]}")
+
+    # Swap lat and lon (solo si ambas están presentes)
+    #if not (pd.isna(data['lat'].iloc[0]) or pd.isna(data['lon'].iloc[0])):
+    #    data = data.rename(columns={'lat': 'temp_lat', 'lon': 'lat'})
+    #    data = data.rename(columns={'temp_lat': 'lon'})
+
+
+    # Verificar coordenadas después del swap
+    #print(f"Después del intercambio: lat = {data['lat'].iloc[0]}, lon = {data['lon'].iloc[0]}")
+
     
     # 1. Filter by currency and place
     data = filter_by_currency_place(data)
@@ -141,14 +151,17 @@ def preprocess_data(property_data: PropertyInput) -> pd.DataFrame:
     # 2. Extract features using RegEx
     data = extract_features_regex(data)
     
+    # Verificar las coordenadas antes de validarlas
+    print(f"Coordenada a verificar: lat = {data['lat'].iloc[0]}, lon = {data['lon'].iloc[0]}")
+
     # 3. Validate geography
-    data = validate_geo(data)
+    data = validate_geo(data, str(BARRIOS_CSV_PATH))
     
     # 4. Calculate distance to nearest subway station
     data = calculate_subte_distance(data, str(SUBTE_STATIONS_PATH))
     
     # 5. Keep only relevant columns (as in notebook)
-    data = data[['rooms_final', 'm2_final', 'distancia_subte_cercano', 'l3', 'property_type', 'price', 'flag']]
+    data = data[['rooms_final', 'm2_final', 'distancia_subte_cercano', 'l2', 'property_type', 'price', 'flag']]
     
     # 6. Clean outliers
     data = clean_data_outliers(data)
@@ -185,6 +198,7 @@ async def predict_price(property_data: PropertyInput):
         # Check if data is valid for prediction (no flags)
         is_valid = processed_data['flag'].isnull().iloc[0]
         flag_value = processed_data['flag'].iloc[0] if not is_valid else None
+
         
         if not is_valid:
             return PredictionOutput(
@@ -196,13 +210,33 @@ async def predict_price(property_data: PropertyInput):
         
         # Prepare features for prediction (following notebook transformations)
         valid_data = processed_data[processed_data['flag'].isnull()]
-        X_features = valid_data.drop(columns=['price', 'flag'])
+        X_features = valid_data.drop(columns=['price'])
+
+        # Convertir tipos numéricos primero y limpiar
+        for col in ["rooms_final", "m2_final", "distancia_subte_cercano"]:
+            X_features[col] = pd.to_numeric(X_features[col], errors="coerce")
+
+        # Reemplazar valores no finitos en columnas numéricas
+        X_features[["rooms_final", "m2_final", "distancia_subte_cercano"]] = \
+            X_features[["rooms_final", "m2_final", "distancia_subte_cercano"]].replace([np.inf, -np.inf], np.nan).fillna(0)
+
+        # Asegurar que 'flag' exista y sea string
+        if 'flag' not in X_features.columns:
+            X_features['flag'] = "None"
+
+        # Rellenar NaN en las categóricas antes de convertir
+        for col in ["l2", "property_type", "flag"]:
+            if col in X_features.columns:
+                X_features[col] = X_features[col].fillna("None").astype("category")
+
         
         # Rename columns to match model expectations
-        X_features = X_features.rename(columns={
-            'l3': 'place_l3',
-            'property_type': 'type'
-        })
+        #X_features = X_features.rename(columns={
+        #    'l3': 'place_l3',
+        #    'property_type': 'type'
+        #})
+
+        
         
         # Make prediction
         prediction = model.predict(X_features)[0]
@@ -231,7 +265,7 @@ async def model_info():
         info = {
             "model_type": type(model).__name__,
             "model_path": str(MODEL_PATH),
-            "expected_features": ["place_l3", "type", "rooms_final", "m2_final", "distancia_subte_cercano"]
+            "expected_features": ['rooms_final', 'm2_final', 'distancia_subte_cercano', 'l2', 'property_type', 'price', 'flag']
         }
         
         # If it's a pipeline, try to get more details
