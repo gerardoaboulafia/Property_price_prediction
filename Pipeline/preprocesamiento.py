@@ -1,9 +1,15 @@
-from preprocess.db_utils import get_connection, download_from_mysql, upload_dataframe_to_mysql
-from preprocess.filter_data import filter_by_currency_place
-from preprocess.regex_extraction import extract_features_regex
-from preprocess.geo_validation import validate_geo
-from preprocess.subte_distance import calculate_subte_distance
-from preprocess.clean_outliers import clean_data_outliers
+# from preprocess.db_utils import get_connection, download_from_mysql, upload_dataframe_to_mysql
+# from preprocess.filter_data import filter_by_currency_place
+# from preprocess.regex_extraction import extract_features_regex
+# from preprocess.geo_validation import validate_geo
+# from preprocess.subte_distance import calculate_subte_distance
+# from preprocess.clean_outliers import clean_data_outliers
+from Pipeline.preprocess.db_utils import get_connection, download_from_mysql, upload_dataframe_to_mysql
+from Pipeline.preprocess.filter_data import filter_by_currency_place
+from Pipeline.preprocess.regex_extraction import extract_features_regex
+from Pipeline.preprocess.geo_validation import validate_geo
+from Pipeline.preprocess.subte_distance import calculate_subte_distance
+from Pipeline.preprocess.clean_outliers import clean_data_outliers
 import pandas as pd
 import warnings
 
@@ -102,4 +108,8 @@ def preprocess_pipeline():
 if __name__ == "__main__":
     preprocess_pipeline()
 
+def preprocess_data(data):
+    df = pd.DataFrame(data)
+    df = df.fillna(df.mean(numeric_only=True))
+    return df
 
