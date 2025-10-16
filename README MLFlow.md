@@ -53,19 +53,5 @@ params_ej = {
    el cual indica que se cerró MLFlow correctamente.
 
 
-## API
-### Requisitos
--Tener instalado MySQL Workbench y MySQL Shell en la computadora <br>
--Librerías:
-pip install mlflow pandas xgboost scikit-learn numpy
-### Pasos
-1- Para correr la API se puede hacer desde la consola corriendo el siguiente comando:
 
-   `uvicorn app.main:app --reload --host 0.0.0.0 --port 8000`
-
-   o bien se puede correr directamente el archivo main (app\main.py). De esta forma se inicializa la API correctamente.
-
-   La API para que predig
-   
-2- Para correr los test de la API, se debe ejecutar el archivo test_api (test_api.py), donde en la consola se muestran los resultados de los mismos. Dos deben dar correctamente, mientras que los  otros deben saltar ciertas flags.
 
