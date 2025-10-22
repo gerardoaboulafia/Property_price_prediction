@@ -45,7 +45,5 @@ def test_api_prediction_success():
     assert isinstance(data["predicted_price"], (int, float)), "El valor no es numérico"
 
 
-
-
 #para que corra este test hay que correr: pytest -v tests/test_integration.py
 #en la terminal!!!!
