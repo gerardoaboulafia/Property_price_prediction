@@ -1,15 +1,28 @@
 import pygame
 import pandas as pd
 import pickle
-from preprocess.filter_data import filter_by_currency_place
-from preprocess.regex_extraction import extract_features_regex
-from preprocess.geo_validation import validate_geo
-from preprocess.subte_distance import calculate_subte_distance
-from preprocess.clean_outliers import clean_data_outliers
+from Pipeline.preprocess.filter_data import filter_by_currency_place
+from Pipeline.preprocess.regex_extraction import extract_features_regex
+from Pipeline.preprocess.geo_validation import validate_geo
+from Pipeline.preprocess.subte_distance import calculate_subte_distance
+from Pipeline.preprocess.clean_outliers import clean_data_outliers
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import r2_score
 import warnings
 import matplotlib.pyplot as plt
+
+# import pygame
+# import pandas as pd
+# import pickle
+# from preprocess.filter_data import filter_by_currency_place
+# from preprocess.regex_extraction import extract_features_regex
+# from preprocess.geo_validation import validate_geo
+# from preprocess.subte_distance import calculate_subte_distance
+# from preprocess.clean_outliers import clean_data_outliers
+# from sklearn.preprocessing import StandardScaler
+# from sklearn.metrics import r2_score
+# import warnings
+# import matplotlib.pyplot as plt
 warnings.simplefilter(action='ignore', category=Warning)
 
 # Función principal para el pipeline de predicción
