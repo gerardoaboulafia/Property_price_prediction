@@ -1,16 +1,24 @@
 # Imagen base: Python liviano
 FROM python:3.11-slim
 
+# Instalar dependencias del sistema necesarias para geopandas y shapely
+RUN apt-get update && apt-get install -y \
+    libgeos-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 # Definir directorio de trabajo dentro del contenedor
 WORKDIR /app
+
+# Copiar requirements primero (mejor cache de Docker)
+COPY requirements2.txt /app/
+
+# Instalar dependencias de Python
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copiar todo el proyecto al contenedor
 COPY . /app
 
-# Instalar dependencias
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Dar permisos al script de inicio (si lo usás)
+# Dar permisos al script de inicio
 RUN chmod +x start_api.sh
 
 # Exponer el puerto de la API
