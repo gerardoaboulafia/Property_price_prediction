@@ -9,7 +9,7 @@ echo "=================================="
 echo ""
 echo "🔍 Checking required files..."
 
-MODEL_FILE="Pipeline/models/modelo_api_test.pkl"
+MODEL_FILE="Pipeline/models/model_api_test.pkl"
 SUBTE_FILE="Pipeline/estaciones-de-subte copy.csv"
 BARRIOS_FILE="Pipeline/barrios copy.csv"
 
