@@ -13,7 +13,7 @@ WORKDIR /app
 COPY requirements2.txt /app/
 
 # Instalar dependencias de Python
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements2.txt
 
 # Copiar todo el proyecto al contenedor
 COPY . /app
