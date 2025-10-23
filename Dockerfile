@@ -19,10 +19,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app
 
 # Dar permisos al script de inicio
-RUN chmod +x start_api.sh
+RUN chmod +x start_api_prueba_docker.sh
 
 # Exponer el puerto de la API
 EXPOSE 8000
 
 # Comando por defecto para levantar la API
-CMD ["./start_api.sh"]
+CMD ["./start_api_prueba_docker.sh"]
