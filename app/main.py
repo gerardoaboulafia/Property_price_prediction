@@ -37,64 +37,64 @@ except Exception as e:
     print(f"Error loading model: {e}")
     model = None
 
-from collections import OrderedDict
-
 class PropertyInput(BaseModel):
-    id: int = Field(..., alias="Identificador")
-    ad_type: str = Field(..., alias="Tipo de anuncio")
-    start_date: str = Field(..., alias="Fecha de inicio")
-    end_date: str = Field(..., alias="Fecha de fin")
-    created_on: str = Field(..., alias="Fecha de creación")
-    lat: Optional[float] = Field(None, alias="Latitud")
-    lon: Optional[float] = Field(None, alias="Longitud")
-    l1: str = Field(..., alias="Ciudad")
-    l2: str = Field(..., alias="Barrio")
-    l3: Optional[str] = Field(None, alias="Sub-barrio")
-    rooms: Optional[float] = Field(None, alias="Cantidad de ambientes")
-    bedrooms: Optional[float] = Field(None, alias="Cantidad de dormitorios")
-    bathrooms: Optional[float] = Field(None, alias="Cantidad de baños")
-    surface_total: Optional[float] = Field(None, alias="Superficie total (m²)")
-    surface_covered: Optional[float] = Field(None, alias="Superficie cubierta (m²)")
-    currency: str = Field(..., alias="Moneda")
-    price_period: str = Field(..., alias="Periodo de precio")
-    title: str = Field(..., alias="Título")
-    description: str = Field(..., alias="Descripción")
-    property_type: str = Field(..., alias="Tipo de propiedad")
-    operation_type: str = Field(..., alias="Tipo de operación")
-    price: float = Field(..., alias="Precio")
+    """Input schema matching the original dataset structure"""
+    id: int = Field(..., description="Unique identifier for the property")
+    ad_type: str = Field(..., description="Type of advertisement")
+    start_date: str = Field(..., description="Start date of the listing")
+    end_date: str = Field(..., description="End date of the listing")
+    created_on: str = Field(..., description="Date when the listing was created")
+    lat: Optional[float] = Field(None, description="Latitude coordinate")
+    lon: Optional[float] = Field(None, description="Longitude coordinate")
+    l1: str = Field(..., description="Location level 1 (country)")
+    l2: str = Field(..., description="Location level 2 (province/state)")
+    l3: str = Field(..., description="Location level 3 (city/neighborhood)")
+    l4: Optional[str] = Field(None, description="Location level 4")
+    l5: Optional[str] = Field(None, description="Location level 5")
+    l6: Optional[float] = Field(None, description="Location level 6")
+    rooms: Optional[float] = Field(None, description="Number of rooms")
+    bedrooms: Optional[float] = Field(None, description="Number of bedrooms")
+    bathrooms: Optional[float] = Field(None, description="Number of bathrooms")
+    surface_total: Optional[float] = Field(None, description="Total surface area in m²")
+    surface_covered: Optional[float] = Field(None, description="Covered surface area in m²")
+    currency: str = Field(..., description="Currency of the price (e.g., USD)")
+    price_period: str = Field(..., description="Price period (e.g., monthly)")
+    title: str = Field(..., description="Property listing title")
+    description: str = Field(..., description="Property description")
+    property_type: str = Field(..., description="Type of property (e.g., Departamento, Casa, PH)")
+    operation_type: str = Field(..., description="Type of operation (e.g., sale, rent)")
+    price: float = Field(..., description="Price of the property")
 
     class Config:
-        populate_by_name = True
-        allow_population_by_field_name = True
-        json_schema_extra = {
-            "example": OrderedDict([
-                ("Identificador", 1),
-                ("Tipo de anuncio", "property"),
-                ("Fecha de inicio", "2023-01-01"),
-                ("Fecha de fin", "2023-12-31"),
-                ("Fecha de creación", "2023-01-01"),
-                ("Latitud", -34.5900),
-                ("Longitud", -58.4200),
-                ("Ciudad", "Argentina"),
-                ("Barrio", "Capital Federal"),
-                ("Sub-barrio", "Palermo"),
-                ("Cantidad de ambientes", 2.0),
-                ("Cantidad de dormitorios", 1.0),
-                ("Cantidad de baños", 1.0),
-                ("Superficie total (m²)", 65.0),
-                ("Superficie cubierta (m²)", 60.0),
-                ("Moneda", "USD"),
-                ("Periodo de precio", "mensual"),
-                ("Título", "Departamento 2 ambientes 65m2 Palermo"),
-                ("Descripción", "Hermoso departamento de 2 ambientes en Palermo, 65 m²"),
-                ("Tipo de propiedad", "Departamento"),
-                ("Tipo de operación", "Venta"),
-                ("Precio", 185000.0)
-            ])
+        schema_extra = {
+            "example": {
+                "id": 1,
+                "ad_type": "property",
+                "start_date": "2023-01-01",
+                "end_date": "2023-12-31",
+                "created_on": "2023-01-01",
+                "lat": -34.5900,  # Coordenadas conocidas de Palermo (será lon después del swap)
+                "lon": -58.4200,  # (será lat después del swap)
+                "l1": "Argentina",
+                "l2": "Capital Federal",
+                "l3": "Palermo",
+                "l4": None,
+                "l5": None,
+                "l6": None,
+                "rooms": 2.0,
+                "bedrooms": 1.0,
+                "bathrooms": 1.0,
+                "surface_total": 65.0,
+                "surface_covered": 60.0,
+                "currency": "USD",
+                "price_period": "monthly",
+                "title": "Departamento 2 ambientes 65m2 Palermo",
+                "description": "Hermoso departamento de 2 ambientes en Palermo, 65 metros cuadrados",
+                "property_type": "Departamento",
+                "operation_type": "Venta",
+                "price": 185000.0
+            }
         }
-
-
-
 
 class PredictionOutput(BaseModel):
     """Output schema for predictions"""
