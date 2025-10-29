@@ -62,7 +62,8 @@ class PropertyInput(BaseModel):
     price: float = Field(..., alias="Precio")
 
     class Config:
-        populate_by_name = True  # Permite seguir usando los nombres originales internamente
+        populate_by_name = True
+        allow_population_by_field_name = True  # 🔹 clave para que Swagger muestre alias
         json_schema_extra = {
             "example": {
                 "Identificador": 1,
@@ -89,6 +90,7 @@ class PropertyInput(BaseModel):
                 "Precio": 185000.0
             }
         }
+
 
 
 class PredictionOutput(BaseModel):
