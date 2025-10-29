@@ -38,32 +38,29 @@ except Exception as e:
     model = None
 
 class PropertyInput(BaseModel):
-    """Input schema matching the original dataset structure"""
-    id: int = Field(..., description="Unique identifier for the property")
-    ad_type: str = Field(..., description="Type of advertisement")
-    start_date: str = Field(..., description="Start date of the listing")
-    end_date: str = Field(..., description="End date of the listing")
-    created_on: str = Field(..., description="Date when the listing was created")
-    lat: Optional[float] = Field(None, description="Latitude coordinate")
-    lon: Optional[float] = Field(None, description="Longitude coordinate")
-    l1: str = Field(..., description="Location level 1 (country)")
-    l2: str = Field(..., description="Location level 2 (province/state)")
-    l3: str = Field(..., description="Location level 3 (city/neighborhood)")
-    l4: Optional[str] = Field(None, description="Location level 4")
-    l5: Optional[str] = Field(None, description="Location level 5")
-    l6: Optional[float] = Field(None, description="Location level 6")
-    rooms: Optional[float] = Field(None, description="Number of rooms")
-    bedrooms: Optional[float] = Field(None, description="Number of bedrooms")
-    bathrooms: Optional[float] = Field(None, description="Number of bathrooms")
-    surface_total: Optional[float] = Field(None, description="Total surface area in m²")
-    surface_covered: Optional[float] = Field(None, description="Covered surface area in m²")
-    currency: str = Field(..., description="Currency of the price (e.g., USD)")
-    price_period: str = Field(..., description="Price period (e.g., monthly)")
-    title: str = Field(..., description="Property listing title")
-    description: str = Field(..., description="Property description")
-    property_type: str = Field(..., description="Type of property (e.g., Departamento, Casa, PH)")
-    operation_type: str = Field(..., description="Type of operation (e.g., sale, rent)")
-    price: float = Field(..., description="Price of the property")
+    id: int = Field(..., title="Identificador", description="Identificador único del inmueble")
+    ad_type: str = Field(..., title="Tipo de anuncio")
+    start_date: str = Field(..., title="Fecha de inicio")
+    end_date: str = Field(..., title="Fecha de fin")
+    created_on: str = Field(..., title="Fecha de creación")
+    lat: Optional[float] = Field(None, title="Latitud")
+    lon: Optional[float] = Field(None, title="Longitud")
+    l1: str = Field(..., title="Ciudad")        # 👈 aparece así en Swagger
+    l2: str = Field(..., title="Barrio")        # 👈 aparece así en Swagger
+    l3: Optional[str] = Field(None, title="Sub-barrio")  # 👈 opcional
+    rooms: Optional[float] = Field(None, title="Cantidad de ambientes")
+    bedrooms: Optional[float] = Field(None, title="Cantidad de dormitorios")
+    bathrooms: Optional[float] = Field(None, title="Cantidad de baños")
+    surface_total: Optional[float] = Field(None, title="Superficie total (m²)")
+    surface_covered: Optional[float] = Field(None, title="Superficie cubierta (m²)")
+    currency: str = Field(..., title="Moneda")
+    price_period: str = Field(..., title="Periodo de precio")
+    title: str = Field(..., title="Título")
+    description: str = Field(..., title="Descripción")
+    property_type: str = Field(..., title="Tipo de propiedad")
+    operation_type: str = Field(..., title="Tipo de operación")
+    price: float = Field(..., title="Precio")
+
 
     class Config:
         schema_extra = {
