@@ -38,60 +38,58 @@ except Exception as e:
     model = None
 
 class PropertyInput(BaseModel):
-    id: int = Field(..., title="Identificador", description="Identificador único del inmueble")
-    ad_type: str = Field(..., title="Tipo de anuncio")
-    start_date: str = Field(..., title="Fecha de inicio")
-    end_date: str = Field(..., title="Fecha de fin")
-    created_on: str = Field(..., title="Fecha de creación")
-    lat: Optional[float] = Field(None, title="Latitud")
-    lon: Optional[float] = Field(None, title="Longitud")
-    l1: str = Field(..., title="Ciudad")        # 👈 aparece así en Swagger
-    l2: str = Field(..., title="Barrio")        # 👈 aparece así en Swagger
-    l3: Optional[str] = Field(None, title="Sub-barrio")  # 👈 opcional
-    rooms: Optional[float] = Field(None, title="Cantidad de ambientes")
-    bedrooms: Optional[float] = Field(None, title="Cantidad de dormitorios")
-    bathrooms: Optional[float] = Field(None, title="Cantidad de baños")
-    surface_total: Optional[float] = Field(None, title="Superficie total (m²)")
-    surface_covered: Optional[float] = Field(None, title="Superficie cubierta (m²)")
-    currency: str = Field(..., title="Moneda")
-    price_period: str = Field(..., title="Periodo de precio")
-    title: str = Field(..., title="Título")
-    description: str = Field(..., title="Descripción")
-    property_type: str = Field(..., title="Tipo de propiedad")
-    operation_type: str = Field(..., title="Tipo de operación")
-    price: float = Field(..., title="Precio")
-
+    id: int = Field(..., alias="Identificador único del inmueble")
+    ad_type: str = Field(..., alias="Tipo de anuncio")
+    start_date: str = Field(..., alias="Fecha de inicio")
+    end_date: str = Field(..., alias="Fecha de fin")
+    created_on: str = Field(..., alias="Fecha de creación")
+    lat: Optional[float] = Field(None, alias="Latitud")
+    lon: Optional[float] = Field(None, alias="Longitud")
+    l1: str = Field(..., alias="Ciudad")
+    l2: str = Field(..., alias="Barrio")
+    l3: Optional[str] = Field(None, alias="Sub-barrio")
+    rooms: Optional[float] = Field(None, alias="Cantidad de ambientes")
+    bedrooms: Optional[float] = Field(None, alias="Cantidad de dormitorios")
+    bathrooms: Optional[float] = Field(None, alias="Cantidad de baños")
+    surface_total: Optional[float] = Field(None, alias="Superficie total (m²)")
+    surface_covered: Optional[float] = Field(None, alias="Superficie cubierta (m²)")
+    currency: str = Field(..., alias="Moneda")
+    price_period: str = Field(..., alias="Periodo de precio")
+    title: str = Field(..., alias="Título")
+    description: str = Field(..., alias="Descripción")
+    property_type: str = Field(..., alias="Tipo de propiedad")
+    operation_type: str = Field(..., alias="Tipo de operación")
+    price: float = Field(..., alias="Precio")
 
     class Config:
-        schema_extra = {
+        populate_by_name = True  # Permite usar los nombres originales internamente
+        json_schema_extra = {
             "example": {
-                "id": 1,
-                "ad_type": "property",
-                "start_date": "2023-01-01",
-                "end_date": "2023-12-31",
-                "created_on": "2023-01-01",
-                "lat": -34.5900,  # Coordenadas conocidas de Palermo (será lon después del swap)
-                "lon": -58.4200,  # (será lat después del swap)
-                "l1": "Argentina",
-                "l2": "Capital Federal",
-                "l3": "Palermo",
-                "l4": None,
-                "l5": None,
-                "l6": None,
-                "rooms": 2.0,
-                "bedrooms": 1.0,
-                "bathrooms": 1.0,
-                "surface_total": 65.0,
-                "surface_covered": 60.0,
-                "currency": "USD",
-                "price_period": "monthly",
-                "title": "Departamento 2 ambientes 65m2 Palermo",
-                "description": "Hermoso departamento de 2 ambientes en Palermo, 65 metros cuadrados",
-                "property_type": "Departamento",
-                "operation_type": "Venta",
-                "price": 185000.0
+                "Identificador único del inmueble": 1,
+                "Tipo de anuncio": "property",
+                "Fecha de inicio": "2023-01-01",
+                "Fecha de fin": "2023-12-31",
+                "Fecha de creación": "2023-01-01",
+                "Latitud": -34.5900,
+                "Longitud": -58.4200,
+                "Ciudad": "Argentina",
+                "Barrio": "Capital Federal",
+                "Sub-barrio": "Palermo",
+                "Cantidad de ambientes": 2.0,
+                "Cantidad de dormitorios": 1.0,
+                "Cantidad de baños": 1.0,
+                "Superficie total (m²)": 65.0,
+                "Superficie cubierta (m²)": 60.0,
+                "Moneda": "USD",
+                "Periodo de precio": "mensual",
+                "Título": "Departamento 2 ambientes 65m2 Palermo",
+                "Descripción": "Hermoso departamento de 2 ambientes en Palermo, 65 m²",
+                "Tipo de propiedad": "Departamento",
+                "Tipo de operación": "Venta",
+                "Precio": 185000.0
             }
         }
+
 
 class PredictionOutput(BaseModel):
     """Output schema for predictions"""
