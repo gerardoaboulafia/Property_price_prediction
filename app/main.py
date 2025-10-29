@@ -37,6 +37,8 @@ except Exception as e:
     print(f"Error loading model: {e}")
     model = None
 
+from collections import OrderedDict
+
 class PropertyInput(BaseModel):
     id: int = Field(..., alias="Identificador")
     ad_type: str = Field(..., alias="Tipo de anuncio")
@@ -63,33 +65,34 @@ class PropertyInput(BaseModel):
 
     class Config:
         populate_by_name = True
-        allow_population_by_field_name = True  # 🔹 clave para que Swagger muestre alias
+        allow_population_by_field_name = True
         json_schema_extra = {
-            "example": {
-                "Identificador": 1,
-                "Tipo de anuncio": "property",
-                "Fecha de inicio": "2023-01-01",
-                "Fecha de fin": "2023-12-31",
-                "Fecha de creación": "2023-01-01",
-                "Latitud": -34.5900,
-                "Longitud": -58.4200,
-                "Ciudad": "Argentina",
-                "Barrio": "Capital Federal",
-                "Sub-barrio": "Palermo",
-                "Cantidad de ambientes": 2.0,
-                "Cantidad de dormitorios": 1.0,
-                "Cantidad de baños": 1.0,
-                "Superficie total (m²)": 65.0,
-                "Superficie cubierta (m²)": 60.0,
-                "Moneda": "USD",
-                "Periodo de precio": "mensual",
-                "Título": "Departamento 2 ambientes 65m2 Palermo",
-                "Descripción": "Hermoso departamento de 2 ambientes en Palermo, 65 m²",
-                "Tipo de propiedad": "Departamento",
-                "Tipo de operación": "Venta",
-                "Precio": 185000.0
-            }
+            "example": OrderedDict([
+                ("Identificador", 1),
+                ("Tipo de anuncio", "property"),
+                ("Fecha de inicio", "2023-01-01"),
+                ("Fecha de fin", "2023-12-31"),
+                ("Fecha de creación", "2023-01-01"),
+                ("Latitud", -34.5900),
+                ("Longitud", -58.4200),
+                ("Ciudad", "Argentina"),
+                ("Barrio", "Capital Federal"),
+                ("Sub-barrio", "Palermo"),
+                ("Cantidad de ambientes", 2.0),
+                ("Cantidad de dormitorios", 1.0),
+                ("Cantidad de baños", 1.0),
+                ("Superficie total (m²)", 65.0),
+                ("Superficie cubierta (m²)", 60.0),
+                ("Moneda", "USD"),
+                ("Periodo de precio", "mensual"),
+                ("Título", "Departamento 2 ambientes 65m2 Palermo"),
+                ("Descripción", "Hermoso departamento de 2 ambientes en Palermo, 65 m²"),
+                ("Tipo de propiedad", "Departamento"),
+                ("Tipo de operación", "Venta"),
+                ("Precio", 185000.0)
+            ])
         }
+
 
 
 
