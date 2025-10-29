@@ -279,6 +279,55 @@ async def model_info():
 from app.health import router as health_router
 app.include_router(health_router)
 
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+from fastapi import Request
+
+# Diccionario de nombres legibles
+FIELD_NAMES = {
+    "id": "Identificador",
+    "ad_type": "Tipo de anuncio",
+    "start_date": "Fecha de inicio",
+    "end_date": "Fecha de fin",
+    "created_on": "Fecha de creación",
+    "lat": "Latitud",
+    "lon": "Longitud",
+    "l1": "Ciudad",         # actualizado
+    "l2": "Barrio",         # actualizado
+    "l3": "Sub-barrio",     # actualizado
+    "rooms": "Cantidad de ambientes",
+    "bedrooms": "Cantidad de dormitorios",
+    "bathrooms": "Cantidad de baños",
+    "surface_total": "Superficie total (m²)",
+    "surface_covered": "Superficie cubierta (m²)",
+    "currency": "Moneda",
+    "price_period": "Periodo de precio",
+    "title": "Título",
+    "description": "Descripción",
+    "property_type": "Tipo de propiedad",
+    "operation_type": "Tipo de operación",
+    "price": "Precio"
+}
+
+# Personalizamos el manejo de errores de validación
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """
+    Captura los errores de validación y devuelve los nombres de campos en español
+    """
+    errors = []
+    for err in exc.errors():
+        # Extraemos el campo (por ejemplo, 'l1') desde la ruta del error
+        field = err.get("loc")[-1] if err.get("loc") else "Campo desconocido"
+        readable_name = FIELD_NAMES.get(field, field)
+        message = err.get("msg", "Error desconocido")
+        errors.append(f"Error en el campo '{readable_name}': {message}")
+
+    return JSONResponse(
+        status_code=422,
+        content={"detail": errors}
+    )
+
 
 if __name__ == "__main__":
     import uvicorn
