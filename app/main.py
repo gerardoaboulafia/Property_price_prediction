@@ -38,32 +38,29 @@ except Exception as e:
     model = None
 
 class PropertyInput(BaseModel):
-    """Input schema matching the original dataset structure"""
-    id: int = Field(..., description="Unique identifier for the property")
-    ad_type: str = Field(..., description="Type of advertisement")
-    start_date: str = Field(..., description="Start date of the listing")
-    end_date: str = Field(..., description="End date of the listing")
-    created_on: str = Field(..., description="Date when the listing was created")
-    lat: Optional[float] = Field(None, description="Latitude coordinate")
-    lon: Optional[float] = Field(None, description="Longitude coordinate")
-    l1: str = Field(..., description="Location level 1 (country)")
-    l2: str = Field(..., description="Location level 2 (province/state)")
-    l3: str = Field(..., description="Location level 3 (city/neighborhood)")
-    l4: Optional[str] = Field(None, description="Location level 4")
-    l5: Optional[str] = Field(None, description="Location level 5")
-    l6: Optional[float] = Field(None, description="Location level 6")
-    rooms: Optional[float] = Field(None, description="Number of rooms")
-    bedrooms: Optional[float] = Field(None, description="Number of bedrooms")
-    bathrooms: Optional[float] = Field(None, description="Number of bathrooms")
-    surface_total: Optional[float] = Field(None, description="Total surface area in m²")
-    surface_covered: Optional[float] = Field(None, description="Covered surface area in m²")
-    currency: str = Field(..., description="Currency of the price (e.g., USD)")
-    price_period: str = Field(..., description="Price period (e.g., monthly)")
-    title: str = Field(..., description="Property listing title")
-    description: str = Field(..., description="Property description")
-    property_type: str = Field(..., description="Type of property (e.g., Departamento, Casa, PH)")
-    operation_type: str = Field(..., description="Type of operation (e.g., sale, rent)")
-    price: float = Field(..., description="Price of the property")
+    id: int = Field(..., title="Identificador", description="Identificador único del inmueble")
+    ad_type: str = Field(..., title="Tipo de anuncio")
+    start_date: str = Field(..., title="Fecha de inicio")
+    end_date: str = Field(..., title="Fecha de fin")
+    created_on: str = Field(..., title="Fecha de creación")
+    lat: Optional[float] = Field(None, title="Latitud")
+    lon: Optional[float] = Field(None, title="Longitud")
+    l1: str = Field(..., title="Ciudad")        # 👈 aparece así en Swagger
+    l2: str = Field(..., title="Barrio")        # 👈 aparece así en Swagger
+    l3: Optional[str] = Field(None, title="Sub-barrio")  # 👈 opcional
+    rooms: Optional[float] = Field(None, title="Cantidad de ambientes")
+    bedrooms: Optional[float] = Field(None, title="Cantidad de dormitorios")
+    bathrooms: Optional[float] = Field(None, title="Cantidad de baños")
+    surface_total: Optional[float] = Field(None, title="Superficie total (m²)")
+    surface_covered: Optional[float] = Field(None, title="Superficie cubierta (m²)")
+    currency: str = Field(..., title="Moneda")
+    price_period: str = Field(..., title="Periodo de precio")
+    title: str = Field(..., title="Título")
+    description: str = Field(..., title="Descripción")
+    property_type: str = Field(..., title="Tipo de propiedad")
+    operation_type: str = Field(..., title="Tipo de operación")
+    price: float = Field(..., title="Precio")
+
 
     class Config:
         schema_extra = {
@@ -278,6 +275,55 @@ async def model_info():
 
 from app.health import router as health_router
 app.include_router(health_router)
+
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+from fastapi import Request
+
+# Diccionario de nombres legibles
+FIELD_NAMES = {
+    "id": "Identificador",
+    "ad_type": "Tipo de anuncio",
+    "start_date": "Fecha de inicio",
+    "end_date": "Fecha de fin",
+    "created_on": "Fecha de creación",
+    "lat": "Latitud",
+    "lon": "Longitud",
+    "l1": "Ciudad",         # actualizado
+    "l2": "Barrio",         # actualizado
+    "l3": "Sub-barrio",     # actualizado
+    "rooms": "Cantidad de ambientes",
+    "bedrooms": "Cantidad de dormitorios",
+    "bathrooms": "Cantidad de baños",
+    "surface_total": "Superficie total (m²)",
+    "surface_covered": "Superficie cubierta (m²)",
+    "currency": "Moneda",
+    "price_period": "Periodo de precio",
+    "title": "Título",
+    "description": "Descripción",
+    "property_type": "Tipo de propiedad",
+    "operation_type": "Tipo de operación",
+    "price": "Precio"
+}
+
+# Personalizamos el manejo de errores de validación
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """
+    Captura los errores de validación y devuelve los nombres de campos en español
+    """
+    errors = []
+    for err in exc.errors():
+        # Extraemos el campo (por ejemplo, 'l1') desde la ruta del error
+        field = err.get("loc")[-1] if err.get("loc") else "Campo desconocido"
+        readable_name = FIELD_NAMES.get(field, field)
+        message = err.get("msg", "Error desconocido")
+        errors.append(f"Error en el campo '{readable_name}': {message}")
+
+    return JSONResponse(
+        status_code=422,
+        content={"detail": errors}
+    )
 
 
 if __name__ == "__main__":
