@@ -168,20 +168,20 @@ def preprocess_data(property_data: PropertyInput) -> pd.DataFrame:
     
     return data
 
-@app.get("/", response_model=PipelineStatus)
-async def health_check():
-    """Health check endpoint"""
-    return PipelineStatus(
-        status="healthy",
-        model_loaded=model is not None,
-        pipeline_components=[
-            "filter_by_currency_place",
-            "extract_features_regex", 
-            "validate_geo",
-            "calculate_subte_distance",
-            "clean_data_outliers"
-        ]
-    )
+# @app.get("/", response_model=PipelineStatus)
+# async def health_check():
+#     """Health check endpoint"""
+#     return PipelineStatus(
+#         status="healthy",
+#         model_loaded=model is not None,
+#         pipeline_components=[
+#             "filter_by_currency_place",
+#             "extract_features_regex", 
+#             "validate_geo",
+#             "calculate_subte_distance",
+#             "clean_data_outliers"
+#         ]
+#     )
 
 @app.post("/predict", response_model=PredictionOutput)
 async def predict_price(property_data: PropertyInput):
@@ -275,6 +275,10 @@ async def model_info():
         return info
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error getting model info: {str(e)}")
+
+from app.health import router as health_router
+app.include_router(health_router)
+
 
 if __name__ == "__main__":
     import uvicorn
