@@ -38,7 +38,7 @@ except Exception as e:
     model = None
 
 class PropertyInput(BaseModel):
-    id: int = Field(..., alias="Identificador único del inmueble")
+    id: int = Field(..., alias="Identificador")
     ad_type: str = Field(..., alias="Tipo de anuncio")
     start_date: str = Field(..., alias="Fecha de inicio")
     end_date: str = Field(..., alias="Fecha de fin")
@@ -62,10 +62,10 @@ class PropertyInput(BaseModel):
     price: float = Field(..., alias="Precio")
 
     class Config:
-        populate_by_name = True  # Permite usar los nombres originales internamente
+        populate_by_name = True  # Permite seguir usando los nombres originales internamente
         json_schema_extra = {
             "example": {
-                "Identificador único del inmueble": 1,
+                "Identificador": 1,
                 "Tipo de anuncio": "property",
                 "Fecha de inicio": "2023-01-01",
                 "Fecha de fin": "2023-12-31",
