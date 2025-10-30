@@ -37,74 +37,85 @@ except Exception as e:
     print(f"Error loading model: {e}")
     model = None
 
+# --- CLASE PRINCIPAL MODIFICADA CON ALIAS ---
+
 class PropertyInput(BaseModel):
     """Input schema matching the original dataset structure"""
-    id: int = Field(..., title="Identificador", description="Identificador único para la propiedad")
-    ad_type: str = Field(..., title="Tipo de Anuncio", description="Tipo de anuncio")
-    start_date: str = Field(..., title="Fecha de Inicio", description="Fecha de inicio de la publicación")
-    end_date: str = Field(..., title="Fecha de Fin", description="Fecha de fin de la publicación")
-    created_on: str = Field(..., title="Fecha de Creación", description="Fecha en que se creó la publicación")
+    # Usamos alias para forzar el nombre en español en la documentación (Swagger) y en la entrada JSON.
+    id: int = Field(..., alias="Identificador", description="Identificador único para la propiedad")
+    ad_type: str = Field(..., alias="Tipo_de_Anuncio", description="Tipo de anuncio")
+    start_date: str = Field(..., alias="Fecha_de_Inicio", description="Fecha de inicio de la publicación")
+    end_date: str = Field(..., alias="Fecha_de_Fin", description="Fecha de fin de la publicación")
+    created_on: str = Field(..., alias="Fecha_de_Creacion", description="Fecha en que se creó la publicación")
     
     # Coordenadas
-    lat: Optional[float] = Field(None, title="Latitud", description="Coordenada de latitud")
-    lon: Optional[float] = Field(None, title="Longitud", description="Coordenada de longitud")
+    lat: Optional[float] = Field(None, alias="Latitud", description="Coordenada de latitud")
+    lon: Optional[float] = Field(None, alias="Longitud", description="Coordenada de longitud")
     
     # 📌 NIVELES DE UBICACIÓN SOLICITADOS (L1, L2, L3)
-    l1: str = Field(..., title="Ciudad", description="Nivel de ubicación 1 (L1 - Ciudad principal o Región)")
-    l2: str = Field(..., title="Barrio", description="Nivel de ubicación 2 (L2 - Barrio o Comuna)")
-    l3: str = Field(..., title="Sub-barrio/Subdivisión", description="Nivel de ubicación 3 (L3 - Sub-barrio o área específica)")
+    l1: str = Field(..., alias="Ciudad", description="Nivel de ubicación 1 (L1 - Ciudad principal o Región)")
+    l2: str = Field(..., alias="Barrio", description="Nivel de ubicación 2 (L2 - Barrio o Comuna)")
+    l3: str = Field(..., alias="Sub_barrio", description="Nivel de ubicación 3 (L3 - Sub-barrio o área específica)")
     
-    l4: Optional[str] = Field(None, title="Nivel de Ubicación 4", description="Nivel de ubicación 4")
-    l5: Optional[str] = Field(None, title="Nivel de Ubicación 5", description="Nivel de ubicación 5")
-    l6: Optional[float] = Field(None, title="Nivel de Ubicación 6", description="Nivel de ubicación 6")
+    l4: Optional[str] = Field(None, alias="Nivel_de_Ubicacion_4", description="Nivel de ubicación 4")
+    l5: Optional[str] = Field(None, alias="Nivel_de_Ubicacion_5", description="Nivel de ubicación 5")
+    l6: Optional[float] = Field(None, alias="Nivel_de_Ubicacion_6", description="Nivel de ubicación 6")
     
     # Características
-    rooms: Optional[float] = Field(None, title="Ambientes", description="Cantidad de ambientes")
-    bedrooms: Optional[float] = Field(None, title="Dormitorios", description="Cantidad de dormitorios")
-    bathrooms: Optional[float] = Field(None, title="Baños", description="Cantidad de baños")
-    surface_total: Optional[float] = Field(None, title="Superficie Total (m²)", description="Área total en m²")
-    surface_covered: Optional[float] = Field(None, title="Superficie Cubierta (m²)", description="Área cubierta en m²")
+    rooms: Optional[float] = Field(None, alias="Ambientes", description="Cantidad de ambientes")
+    bedrooms: Optional[float] = Field(None, alias="Dormitorios", description="Cantidad de dormitorios")
+    bathrooms: Optional[float] = Field(None, alias="Banios", description="Cantidad de baños")
+    surface_total: Optional[float] = Field(None, alias="Superficie_Total_m2", description="Área total en m²")
+    surface_covered: Optional[float] = Field(None, alias="Superficie_Cubierta_m2", description="Área cubierta en m²")
     
     # Precio y tipo
-    currency: str = Field(..., title="Moneda", description="Moneda del precio (ej: USD)")
-    price_period: str = Field(..., title="Período de Precio", description="Período de precio (ej: mensual)")
-    title: str = Field(..., title="Título del Anuncio", description="Título de la publicación de la propiedad")
-    description: str = Field(..., title="Descripción del Anuncio", description="Descripción de la propiedad")
-    property_type: str = Field(..., title="Tipo de Propiedad", description="Tipo de propiedad (ej: Departamento, Casa, PH)")
-    operation_type: str = Field(..., title="Tipo de Operación", description="Tipo de operación (ej: Venta, Alquiler)")
-    price: float = Field(..., title="Precio", description="Precio de la propiedad")
+    currency: str = Field(..., alias="Moneda", description="Moneda del precio (ej: USD)")
+    price_period: str = Field(..., alias="Periodo_de_Precio", description="Período de precio (ej: mensual)")
+    title: str = Field(..., alias="Titulo_del_Anuncio", description="Título de la publicación de la propiedad")
+    description: str = Field(..., alias="Descripcion_del_Anuncio", description="Descripción de la propiedad")
+    property_type: str = Field(..., alias="Tipo_de_Propiedad", description="Tipo de propiedad (ej: Departamento, Casa, PH)")
+    operation_type: str = Field(..., alias="Tipo_de_Operacion", description="Tipo de operación (ej: Venta, Alquiler)")
+    price: float = Field(..., alias="Precio", description="Precio de la propiedad")
 
     class Config:
-        # El example se mantiene igual, ya que las claves internas no cambian.
+        # Permite que la API use los nombres internos (l1) o los alias (Ciudad) para llenar el modelo.
+        allow_population_by_field_name = True
+        # Fuerza a Pydantic a usar los ALIAS para la generación del esquema OpenAPI (Swagger).
+        by_alias = True
+        
         schema_extra = {
+            # EL EJEMPLO DEBE USAR LAS NUEVAS CLAVES EN ESPAÑOL (ALIAS)
             "example": {
-                "id": 1,
-                "ad_type": "property",
-                "start_date": "2023-01-01",
-                "end_date": "2023-12-31",
-                "created_on": "2023-01-01",
-                "lat": -34.5900,
-                "lon": -58.4200,
-                "l1": "Argentina",
-                "l2": "Capital Federal",
-                "l3": "Palermo",
-                "l4": None,
-                "l5": None,
-                "l6": None,
-                "rooms": 2.0,
-                "bedrooms": 1.0,
-                "bathrooms": 1.0,
-                "surface_total": 65.0,
-                "surface_covered": 60.0,
-                "currency": "USD",
-                "price_period": "monthly",
-                "title": "Departamento 2 ambientes 65m2 Palermo",
-                "description": "Hermoso departamento de 2 ambientes en Palermo, 65 metros cuadrados",
-                "property_type": "Departamento",
-                "operation_type": "Venta",
-                "price": 185000.0
+                "Identificador": 1,
+                "Tipo_de_Anuncio": "property",
+                "Fecha_de_Inicio": "2023-01-01",
+                "Fecha_de_Fin": "2023-12-31",
+                "Fecha_de_Creacion": "2023-01-01",
+                "Latitud": -34.5900, 
+                "Longitud": -58.4200, 
+                "Ciudad": "Argentina",
+                "Barrio": "Capital Federal",
+                "Sub_barrio": "Palermo",
+                "Nivel_de_Ubicacion_4": None,
+                "Nivel_de_Ubicacion_5": None,
+                "Nivel_de_Ubicacion_6": None,
+                "Ambientes": 2.0,
+                "Dormitorios": 1.0,
+                "Banios": 1.0,
+                "Superficie_Total_m2": 65.0,
+                "Superficie_Cubierta_m2": 60.0,
+                "Moneda": "USD",
+                "Periodo_de_Precio": "monthly",
+                "Titulo_del_Anuncio": "Departamento 2 ambientes 65m2 Palermo",
+                "Descripcion_del_Anuncio": "Hermoso departamento de 2 ambientes en Palermo, 65 metros cuadrados",
+                "Tipo_de_Propiedad": "Departamento",
+                "Tipo_de_Operacion": "Venta",
+                "Precio": 185000.0
             }
         }
+
+# --- CLASES DE SALIDA Y ESTADO (SIN CAMBIOS) ---
+
 class PredictionOutput(BaseModel):
     """Output schema for predictions"""
     predicted_price: float = Field(..., description="Predicted price in USD")
@@ -118,9 +129,12 @@ class PipelineStatus(BaseModel):
     model_loaded: bool
     pipeline_components: List[str]
 
+# --- FUNCIONES DE PREPROCESAMIENTO Y PREDICCIÓN (SIN CAMBIOS EN LA LÓGICA) ---
+
 def preprocess_data(property_data: PropertyInput) -> pd.DataFrame:
     """
     Process the input data through the same pipeline as the notebook
+    (Usa los nombres de variables internos: property_data.l1, property_data.rooms, etc.)
     """
     # Convert to DataFrame with required columns for pipeline
     data = pd.DataFrame([{
@@ -138,21 +152,6 @@ def preprocess_data(property_data: PropertyInput) -> pd.DataFrame:
         'operation_type': property_data.operation_type,
         'price': property_data.price
     }])
-    
-    # Apply the same transformations as in the notebook
-    # IMPORTANT: Swap lat and lon (exactly as in notebook) - but only if both are not None
-    # Verificar coordenadas antes de hacer el swap
-    #print(f"Antes del intercambio: lat = {data['lat'].iloc[0]}, lon = {data['lon'].iloc[0]}")
-
-    # Swap lat and lon (solo si ambas están presentes)
-    #if not (pd.isna(data['lat'].iloc[0]) or pd.isna(data['lon'].iloc[0])):
-    #    data = data.rename(columns={'lat': 'temp_lat', 'lon': 'lat'})
-    #    data = data.rename(columns={'temp_lat': 'lon'})
-
-
-    # Verificar coordenadas después del swap
-    #print(f"Después del intercambio: lat = {data['lat'].iloc[0]}, lon = {data['lon'].iloc[0]}")
-
     
     # 1. Filter by currency and place
     data = filter_by_currency_place(data)
@@ -177,21 +176,6 @@ def preprocess_data(property_data: PropertyInput) -> pd.DataFrame:
     
     return data
 
-# @app.get("/", response_model=PipelineStatus)
-# async def health_check():
-#     """Health check endpoint"""
-#     return PipelineStatus(
-#         status="healthy",
-#         model_loaded=model is not None,
-#         pipeline_components=[
-#             "filter_by_currency_place",
-#             "extract_features_regex", 
-#             "validate_geo",
-#             "calculate_subte_distance",
-#             "clean_data_outliers"
-#         ]
-#     )
-
 @app.post("/predict", response_model=PredictionOutput)
 async def predict_price(property_data: PropertyInput):
     """
@@ -207,7 +191,6 @@ async def predict_price(property_data: PropertyInput):
         # Check if data is valid for prediction (no flags)
         is_valid = processed_data['flag'].isnull().iloc[0]
         flag_value = processed_data['flag'].iloc[0] if not is_valid else None
-
         
         if not is_valid:
             return PredictionOutput(
@@ -237,15 +220,6 @@ async def predict_price(property_data: PropertyInput):
         for col in ["l2", "property_type", "flag"]:
             if col in X_features.columns:
                 X_features[col] = X_features[col].fillna("None").astype("category")
-
-        
-        # Rename columns to match model expectations
-        #X_features = X_features.rename(columns={
-        #    'l3': 'place_l3',
-        #    'property_type': 'type'
-        #})
-
-        
         
         # Make prediction
         prediction = model.predict(X_features)[0]
@@ -285,36 +259,42 @@ async def model_info():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error getting model info: {str(e)}")
 
-from app.health import router as health_router
-app.include_router(health_router)
+# --- MANEJO DE ERRORES Y DICCIONARIO ACTUALIZADO ---
+
+# Si tienes un archivo 'app/health.py' debes asegurarte de que exista:
+# from app.health import router as health_router
+# app.include_router(health_router)
 
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi import Request
 
-# Diccionario de nombres legibles
+# Diccionario de nombres legibles (usa los alias definidos para traducir errores)
 FIELD_NAMES = {
     "id": "Identificador",
-    "ad_type": "Tipo de anuncio",
-    "start_date": "Fecha de inicio",
-    "end_date": "Fecha de fin",
-    "created_on": "Fecha de creación",
+    "ad_type": "Tipo_de_Anuncio",
+    "start_date": "Fecha_de_Inicio",
+    "end_date": "Fecha_de_Fin",
+    "created_on": "Fecha_de_Creacion",
     "lat": "Latitud",
     "lon": "Longitud",
-    "l1": "Ciudad",         # actualizado
-    "l2": "Barrio",         # actualizado
-    "l3": "Sub-barrio",     # actualizado
-    "rooms": "Cantidad de ambientes",
-    "bedrooms": "Cantidad de dormitorios",
-    "bathrooms": "Cantidad de baños",
-    "surface_total": "Superficie total (m²)",
-    "surface_covered": "Superficie cubierta (m²)",
+    "l1": "Ciudad", 
+    "l2": "Barrio", 
+    "l3": "Sub_barrio", 
+    "l4": "Nivel_de_Ubicacion_4",
+    "l5": "Nivel_de_Ubicacion_5",
+    "l6": "Nivel_de_Ubicacion_6",
+    "rooms": "Ambientes",
+    "bedrooms": "Dormitorios",
+    "bathrooms": "Banios",
+    "surface_total": "Superficie_Total_m2",
+    "surface_covered": "Superficie_Cubierta_m2",
     "currency": "Moneda",
-    "price_period": "Periodo de precio",
-    "title": "Título",
-    "description": "Descripción",
-    "property_type": "Tipo de propiedad",
-    "operation_type": "Tipo de operación",
+    "price_period": "Periodo_de_Precio",
+    "title": "Titulo_del_Anuncio",
+    "description": "Descripcion_del_Anuncio",
+    "property_type": "Tipo_de_Propiedad",
+    "operation_type": "Tipo_de_Operacion",
     "price": "Precio"
 }
 
@@ -328,6 +308,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     for err in exc.errors():
         # Extraemos el campo (por ejemplo, 'l1') desde la ruta del error
         field = err.get("loc")[-1] if err.get("loc") else "Campo desconocido"
+        # Usamos el mapeo de nombres internos a alias para la traducción
         readable_name = FIELD_NAMES.get(field, field)
         message = err.get("msg", "Error desconocido")
         errors.append(f"Error en el campo '{readable_name}': {message}")
