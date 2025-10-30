@@ -27,3 +27,6 @@ async def health_check():
             "clean_data_outliers"
         ]
     )
+
+#para que corra bien primero hay que activar la api y depsues pegar en el buscador
+#http://127.0.0.1:8000/health
