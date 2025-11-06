@@ -117,8 +117,7 @@ pipeline:
 
 ---
 
-## Diagrama ASCII (por si no aceptan Mermaid)
-
+## Diagrama ASCII 
 ```
 RAW CSV
   └─ data/raw/properaty_dataset_alumnos.csv
@@ -162,57 +161,3 @@ PRODUCCIÓN
 ```
 
 ---
-
-## (Opcional) Diagrama Mermaid
-
-Si tu plataforma soporta Mermaid, pegá esto también:
-
-```mermaid
-flowchart LR
-  subgraph D[Datos]
-    D1[data/raw/properaty_dataset_alumnos.csv]
-    D2[data/processed/datos_limpios.csv]
-  end
-
-  subgraph P[Pipeline (offline)]
-    direction LR
-    P0[Pipeline/preprocesamiento.py]
-    subgraph Pp[Pipeline/preprocess/]
-      PF[filter_data.py]
-      PR[regex_extraction.py]
-      PG[geo_validation.py]
-      PS[subte_distance.py]
-      PO[clean_outliers.py]
-    end
-    PT[Notebooks/XGBoost_testing.ipynb]
-    PM[Pipeline/creacion_experimento.py]
-    PI[Pipeline/inicializacion_mlflow.py]
-    PRG[Pipeline/registro_exp_mlflow.py]
-    PD[Pipeline/models/]
-  end
-
-  subgraph M[MLflow]
-    M1[mlruns/ (experimentos)]
-    M2[Model Registry (Staging/Production)]
-  end
-
-  subgraph A[API & Docker]
-    AP[app/ (FastAPI)]
-    H1[/health · /metrics · /predict/]
-    DK[Dockerfile + .dockerignore]
-    SC[start_api.sh · start_api_prueba_docker.sh]
-  end
-
-  subgraph O[Operación & Monitoreo]
-    OM[Logs/Métricas/Alertas]
-    EV[Evaluación en Producción (shadow/canary)]
-    RB[Runbook & Rollback]
-  end
-
-  D1 --> P0 --> Pp --> D2
-  D2 --> PT --> PM
-  PM -->|mlflow.log_*| M1
-  M1 -->|gate OK| PRG --> M2
-  M2 -->|modelo Production| DK --> AP --> H1
-  H1 --> OM --> EV --> RB --> P0
-```
