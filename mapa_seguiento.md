@@ -24,26 +24,8 @@
 ## 4. Dockerización & Deploy
 
 - **Build:** `Dockerfile` (+ `.dockerignore`)  
-- **Servicio:** `app/` (FastAPI: `/predict`, `/health`, `/metrics`)  
-- **Arranque:** `start_api.sh`, `start_api_prueba_docker.sh`
-
-## 5. Monitoreo & Evaluación en Producción
-
-- **Operativas:** latencia p95, error_rate, disponibilidad, healthchecks  
-- **De modelo:** distribución de features, score drift, outliers  
-- **Estrategia:** _shadow_/_canary_, comparación con el modelo actual
-
-## 6. Gate de Promoción (ejemplo)
-
-- AUC/F1 nuevo ≥ actual + **0.01**  
-- p95 de inferencia ≤ **300 ms**  
-- Varianza entre _folds_ ≤ **X%**  
-- Recursos dentro de límites; ejecución reproducible (datos + código + params)
-
-## 7. Alertas & Runbook
-
-- **Alertas:** `error_rate > 2% 5m`, `p95 > 500ms 5m`, `health fail 3/5`, `drift > umbral`  
-- **Runbook (resumen):** revisar panel → logs → probar `/health` y `/predict` → **rollback** → ticket → plan de reentrenamiento
+- **Servicio:** `app/` (FastAPI: `/health`, `/main`)  
+- **Arranque:** `start_api_prueba_docker.sh`
 
 ---
 
@@ -89,30 +71,6 @@ pipeline:
     start_scripts:
       - start_api.sh
       - start_api_prueba_docker.sh
-
-  production_eval:
-    operational_metrics: [availability, error_rate, latency_p95]
-    model_metrics: [feature_distribution, score_drift, outliers_rate]
-    strategies: [shadow, canary]
-
-  alerts:
-    - name: high_error_rate
-      rule: error_rate > 0.02 for 5m
-    - name: high_latency
-      rule: latency_p95 > 500ms for 5m
-    - name: healthcheck_fails
-      rule: health_fail >= 3 of 5
-    - name: model_drift
-      rule: drift > threshold
-
-  runbook:
-    steps:
-      - "Revisar panel últimos 15m (latencias/errores)."
-      - "Inspeccionar logs (docker/kubectl)."
-      - "Probar /health y /predict interno."
-      - "Si hubo deploy reciente → rollback al tag anterior."
-      - "Abrir ticket y documentar causa raíz."
-      - "Plan de reentrenamiento si hay drift."
 ```
 
 ---
@@ -151,13 +109,6 @@ DOCKER IMAGE
           |
           v
 DEPLOY (start_api.sh / start_api_prueba_docker.sh)
-          |
-          v
-PRODUCCIÓN
-  ├─ Monitoreo: latencia p95, error_rate, disponibilidad
-  ├─ Modelo: drift, outliers, dist. features
-  ├─ Shadow/Canary y comparación
-  └─ Alertas -> Runbook -> (Rollback o Reentrenar)
 ```
 
 ---
