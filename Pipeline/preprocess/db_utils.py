@@ -1,7 +1,7 @@
 import mysql.connector
 import pandas as pd
 
-def get_connection(user="root", password="tu_password", host="localhost", port=3306, database="proyectos"):
+def get_connection(user="root", password="tu_password", host="localhost", port=3307, database="proyectos"):
     """
     Crea la conexión con MySQL y devuelve el objeto connection.
     Ajusta user/password/host/port/database según tu instalación.
