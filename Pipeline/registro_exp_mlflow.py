@@ -87,30 +87,44 @@ def train_new_model(X, y, params, model_name="xgboost_model"):
 
 
 # 5. Loggear en MLflow
+import os
+import pickle
+from datetime import datetime
+import mlflow
+import mlflow.sklearn
+
 def log_with_mlflow(model, rmse, r2, model_name, register=False, registry_name="modelo_api_p"):
     mlflow.set_tracking_uri("http://localhost:5000")
-    mlflow.set_experiment("xgboost_models")  # Usamos el mismo experimento
+    mlflow.set_experiment("xgboost_models")
 
     with mlflow.start_run(run_name=model_name):
-        # Log de parámetros principales
+        # Log de parámetros y métricas
         for k, v in model.get_params().items():
             mlflow.log_param(k, v)
-
-        # Log de métricas
         mlflow.log_metric("rmse", rmse)
         mlflow.log_metric("r2", r2)
 
-        # Guardar modelo como artefacto
+        # Nuevo paso: guardar modelo localmente como .pkl
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+        model_dir = "Pipeline/models"
+        os.makedirs(model_dir, exist_ok=True)
+        model_path = os.path.join(model_dir, f"{model_name}_{timestamp}.pkl")
+
+        with open(model_path, "wb") as f:
+            pickle.dump(model, f)
+
+        print(f"Modelo guardado localmente en: {model_path}")
+
+        # Subir también ese pkl como artifact
+        mlflow.log_artifact(model_path)
+
+        # Loggear modelo dentro de MLflow como antes
         if register:
-            mlflow.sklearn.log_model(
-                model, 
-                name="model",
-                registered_model_name=registry_name
-            )
+            mlflow.sklearn.log_model(model, name="model", registered_model_name=registry_name)
         else:
             mlflow.sklearn.log_model(model, name="model")
 
-        print(f"Modelo loggeado en MLflow con nombre '{model_name}' (Registry={register}) con RMSE={rmse:.2f} y R2={r2:.2f}")
+        print(f"Modelo loggeado en MLflow ({model_name}) con RMSE={rmse:.2f}, R2={r2:.2f}")
 
 
 if __name__ == "__main__":
