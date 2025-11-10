@@ -80,22 +80,28 @@ def train_new_model(X, y, params, model_name="xgboost_model"):
     rmse = np.sqrt(mean_squared_error(y_test, preds))
     r2 = r2_score(y_test, preds)
 
-    # Loggear en MLflow con un nombre de run dinámico
-    log_with_mlflow(model, rmse, r2, model_name)
-    
+    # Loggear en MLflow
+    passed = log_with_mlflow(model, rmse, r2, model_name)
+
+    if passed:
+        print(f"✅ Modelo {model_name} aprobado (RMSE={rmse:.2f}, R2={r2:.2f}) y guardado como .pkl")
+    else:
+        print(f"⚠ Modelo {model_name} NO cumple criterios (RMSE={rmse:.2f}, R2={r2:.2f}) — no se guarda .pkl")
+
     return model, rmse, r2
 
 
 # 5. Loggear en MLflow
-import os
-import pickle
-from datetime import datetime
-import mlflow
-import mlflow.sklearn
-
-def log_with_mlflow(model, rmse, r2, model_name, register=False, registry_name="modelo_api_p"):
+def log_with_mlflow(model, rmse, r2, model_name, registry_name="modelo_api_p"):
     mlflow.set_tracking_uri("http://localhost:5000")
     mlflow.set_experiment("xgboost_models")
+
+    # --- Definí tus criterios ---
+    RMSE_THRESHOLD = 100000
+    R2_THRESHOLD = 0.6
+
+    # --- Evaluar si pasa ---
+    passed = (r2 > R2_THRESHOLD) and (rmse < RMSE_THRESHOLD)
 
     with mlflow.start_run(run_name=model_name):
         # Log de parámetros y métricas
@@ -103,40 +109,35 @@ def log_with_mlflow(model, rmse, r2, model_name, register=False, registry_name="
             mlflow.log_param(k, v)
         mlflow.log_metric("rmse", rmse)
         mlflow.log_metric("r2", r2)
+        mlflow.log_param("passed_criteria", passed)
 
-        # Nuevo paso: guardar modelo localmente como .pkl
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M")
-        model_dir = "Pipeline/models"
-        os.makedirs(model_dir, exist_ok=True)
-        model_path = os.path.join(model_dir, f"{model_name}_{timestamp}.pkl")
+        # Si pasa el umbral → guardar local y registrar
+        if passed:
+            from datetime import datetime
+            import os, pickle
 
-        with open(model_path, "wb") as f:
-            pickle.dump(model, f)
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+            model_dir = "Pipeline/models"
+            os.makedirs(model_dir, exist_ok=True)
+            model_path = os.path.join(model_dir, f"{model_name}_{timestamp}.pkl")
 
-        print(f"Modelo guardado localmente en: {model_path}")
+            with open(model_path, "wb") as f:
+                pickle.dump(model, f)
 
-        # Subir también ese pkl como artifact
-        mlflow.log_artifact(model_path)
-
-        # Loggear modelo dentro de MLflow como antes
-        if register:
+            mlflow.log_artifact(model_path)
             mlflow.sklearn.log_model(model, name="model", registered_model_name=registry_name)
-        else:
-            mlflow.sklearn.log_model(model, name="model")
 
-        print(f"Modelo loggeado en MLflow ({model_name}) con RMSE={rmse:.2f}, R2={r2:.2f}")
+        else:
+            # Si no pasa, solo logueamos el modelo sin registrarlo
+            mlflow.sklearn.log_model(model, name="model_unqualified")
+
+    return passed
 
 
 if __name__ == "__main__":
     data = load_clean_data()
     params_0 = get_params_from_pkl()
-    params_1 = {
-    'objective': 'reg:squarederror',
-    'eval_metric': 'rmse',
-    'learning_rate': 0.1,
-    'max_depth': 3,  # Menor profundidad
-    'n_estimators': 2000,  # Más estimadores
-    'subsample': 0.8,  # Submuestreo para evitar sobreajuste
+    params_1 = {'objective': 'reg:squarederror', 'eval_metric': 'rmse', 'learning_rate': 0.1, 'max_depth': 3,  # Menor profundidad 'n_estimators': 2000,  # Más estimadores 'subsample': 0.8,  # Submuestreo para evitar sobreajuste
     'colsample_bytree': 0.8,  # Muestra una fracción de las columnas
     'random_state': 5,
     'tree_method': 'hist',
@@ -173,9 +174,9 @@ if __name__ == "__main__":
     #model_0, rmse_0, r2_0 = train_new_model(X, y, params_0, model_name="xgboost_retrained_with_pkl_params")
     #model_1, rmse_1, r2_1 = train_new_model(X, y, params_1, model_name="xgboost_model_1")
     model_2, rmse_2, r2_2 = train_new_model(X, y, params_2, model_name="xgboost_model_2")
-    #model_3, rmse_3, r2_3 = train_new_model(X, y, params_3, model_name="xgboost_model_3")
+    model_3, rmse_3, r2_3 = train_new_model(X, y, params_3, model_name="xgboost_model_3")
     # Subir los modelos a MLflow
     #log_with_mlflow(model_0, rmse_0, r2_0, model_name="xgboost_retrained_with_pkl_params")
     #log_with_mlflow(model_1, rmse_1, r2_1, model_name="xgboost_model_1")
-    log_with_mlflow(model_2, rmse_2, r2_2, model_name="xgboost_model_2", register=True, registry_name="modelo_api_p")
-    #log_with_mlflow(model_3, rmse_3, r2_3, model_name="xgboost_model_3")
+    log_with_mlflow(model_2, rmse_2, r2_2, model_name="xgboost_model_2", registry_name="modelo_api_p")
+    log_with_mlflow(model_3, rmse_3, r2_3, model_name="xgboost_model_3", registry_name="modelo_api_p_v2")
