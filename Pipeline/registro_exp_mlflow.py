@@ -1,182 +1,188 @@
+import os
+import logging
+import pickle
+from datetime import datetime
 import mlflow
 import mlflow.sklearn
 import pandas as pd
-import pickle
+import numpy as np
 from xgboost import XGBRegressor
 from sklearn.metrics import mean_squared_error, r2_score
-import numpy as np
-from preprocess.db_utils import get_connection, download_from_mysql
 from sklearn.model_selection import train_test_split
+import random
+from preprocess.db_utils import get_connection, download_from_mysql
 
+# -------------------------------------------------------------------
+# CONFIGURACIÓN DE LOGGING
+# -------------------------------------------------------------------
+log_dir = "Pipeline/logs"
+os.makedirs(log_dir, exist_ok=True)
+log_path = os.path.join(log_dir, "training_run.log")
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler(log_path, mode="a"),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
+
+# -------------------------------------------------------------------
 # 1. Cargar datos limpios desde SQL
+# -------------------------------------------------------------------
 def load_clean_data():
-    conn = get_connection(
-        user="labo_ame_agus", 
-        password="ameagusmica", 
-        host="localhost", 
-        port=3307, 
-        database="laboratorioII"
-    )
-    data = download_from_mysql("processed_data", conn)
-    conn.close()
-    return data
+    try:
+        conn = get_connection(
+            user="labo_ame_agus",
+            password="ameagusmica",
+            host="localhost",
+            port=3307,
+            database="laboratorioII"
+        )
+        data = download_from_mysql("processed_data", conn)
+        conn.close()
+        logger.info("Datos cargados exitosamente desde MySQL.")
+        return data
+    except Exception as e:
+        logger.exception("Error al cargar los datos desde MySQL.")
+        raise e
 
-# 2. Extraer hiperparámetros desde el .pkl
-def get_params_from_pkl(path="Pipeline/models/xgboost_property_model3.pkl"):
-    with open(path, "rb") as f:
-        model_pkl = pickle.load(f)
-    if hasattr(model_pkl, "get_params"):
-        return model_pkl.get_params()
-    else:
-        raise ValueError("El archivo .pkl no contiene un modelo sklearn-compatible.")
+# -------------------------------------------------------------------
+# 2. Generar hiperparámetros aleatorios
+# -------------------------------------------------------------------
+def get_random_params():
+    params = {
+        'objective': 'reg:squarederror',
+        'eval_metric': 'rmse',
+        'learning_rate': random.choice([0.01, 0.03, 0.05, 0.07, 0.1]),
+        'max_depth': random.choice([3, 4, 5, 6, 7, 8]),
+        'n_estimators': random.choice([300, 500, 800, 1000, 1500, 2000]),
+        'subsample': random.choice([0.6, 0.7, 0.8, 0.9, 1.0]),
+        'colsample_bytree': random.choice([0.6, 0.7, 0.8, 0.9, 1.0]),
+        'reg_alpha': random.choice([0, 0.05, 0.1, 0.2, 0.5]),
+        'reg_lambda': random.choice([0.5, 0.8, 1, 1.2, 1.5]),
+        'random_state': random.randint(1, 100),
+        'tree_method': 'hist',
+        'enable_categorical': True
+    }
+    return params
 
+# -------------------------------------------------------------------
 # 3. Preparar features
+# -------------------------------------------------------------------
 def prepare_features(df, target="price"):
+    try:
+        df = df[df["flag"] == "None"].copy()
+        df = df.dropna(subset=[target]).copy()
+        df[target] = pd.to_numeric(df[target], errors="coerce")
+        df = df[np.isfinite(df[target])]
 
-    # Quedarme con las filas con flag = 'None'
-    df = df[df["flag"] == "None"].copy()
+        X = df.drop(columns=[target])
+        y = df[target]
 
-    # Filtrar filas con NaN en la columna target
-    df = df.dropna(subset=[target]).copy()
+        for col in ["rooms_final", "m2_final", "distancia_subte_cercano"]:
+            if col in X.columns:
+                X[col] = pd.to_numeric(X[col], errors="coerce")
 
-    # Asegurar que el target sea numérico
-    df[target] = pd.to_numeric(df[target], errors="coerce")
+        for col in ["l2", "property_type", "flag"]:
+            if col in X.columns:
+                X[col] = X[col].astype("category")
 
-    # Eliminar filas con inf en target
-    df = df[np.isfinite(df[target])]
+        logger.info(f"Shape de X: {X.shape}, Shape de y: {y.shape}")
+        return X, y
+    except Exception as e:
+        logger.exception("Error durante la preparación de las features.")
+        raise e
 
-    # Separar X e y
-    X = df.drop(columns=[target])
-    y = df[target]
-
-    # Asegurar que las numéricas sean float
-    for col in ["rooms_final", "m2_final", "distancia_subte_cercano"]:
-        X[col] = pd.to_numeric(X[col], errors="coerce")
-
-    # Variables categóricas
-    for col in ["l2", "property_type", "flag"]:
-        if col in X.columns:
-            X[col] = X[col].astype("category")
-    
-    # Ver shape final
-    print(f"Shape de X: {X.shape}, Shape de y: {y.shape}")
-
-    return X, y
-
-
-# 4. Entrenar modelo con los hiperparámetros del pkl
+# -------------------------------------------------------------------
+# 4. Entrenar modelo con los hiperparámetros
+# -------------------------------------------------------------------
 def train_new_model(X, y, params, model_name="xgboost_model"):
-    # Dividir los datos en train/test
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    try:
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
-    # Filtrar solo los parámetros relevantes que XGBRegressor acepta
-    allowed_params = XGBRegressor().get_params().keys()
-    clean_params = {k: v for k, v in params.items() if k in allowed_params}
+        allowed_params = XGBRegressor().get_params().keys()
+        clean_params = {k: v for k, v in params.items() if k in allowed_params}
 
-    model = XGBRegressor(**clean_params)
-    model.fit(X_train, y_train)
+        model = XGBRegressor(**clean_params)
+        model.fit(X_train, y_train)
 
-    preds = model.predict(X_test)
-    rmse = np.sqrt(mean_squared_error(y_test, preds))
-    r2 = r2_score(y_test, preds)
+        preds = model.predict(X_test)
+        rmse = np.sqrt(mean_squared_error(y_test, preds))
+        r2 = r2_score(y_test, preds)
 
-    # Loggear en MLflow
-    passed = log_with_mlflow(model, rmse, r2, model_name)
+        logger.info(f"Modelo '{model_name}' entrenado. RMSE={rmse:.2f}, R2={r2:.2f}")
+        return model, rmse, r2
+    except Exception as e:
+        logger.exception(f"Error al entrenar el modelo '{model_name}'.")
+        raise e
 
-    if passed:
-        print(f"✅ Modelo {model_name} aprobado (RMSE={rmse:.2f}, R2={r2:.2f}) y guardado como .pkl")
-    else:
-        print(f"⚠ Modelo {model_name} NO cumple criterios (RMSE={rmse:.2f}, R2={r2:.2f}) — no se guarda .pkl")
+# -------------------------------------------------------------------
+# 5. Loggear en MLflow (solo si R2 > 0.83)
+# -------------------------------------------------------------------
+def log_with_mlflow(model, rmse, r2, model_name, register=False, registry_name="modelo_random"):
+    try:
+        if r2 <= 0.83:
+            logger.warning(f"⚠️ Modelo con R²={r2:.4f} no cumple el umbral (0.83). No se guardará ni registrará.")
+            return
 
-    return model, rmse, r2
+        mlflow.set_tracking_uri("http://localhost:5000")
+        mlflow.set_experiment("xgboost_models")
 
-
-# 5. Loggear en MLflow
-def log_with_mlflow(model, rmse, r2, model_name, registry_name="modelo_api_p"):
-    mlflow.set_tracking_uri("http://localhost:5000")
-    mlflow.set_experiment("xgboost_models")
-
-    # --- Definí tus criterios ---
-    RMSE_THRESHOLD = 100000
-    R2_THRESHOLD = 0.6
-
-    # --- Evaluar si pasa ---
-    passed = (r2 > R2_THRESHOLD) and (rmse < RMSE_THRESHOLD)
-
-    with mlflow.start_run(run_name=model_name):
-        # Log de parámetros y métricas
-        for k, v in model.get_params().items():
-            mlflow.log_param(k, v)
-        mlflow.log_metric("rmse", rmse)
-        mlflow.log_metric("r2", r2)
-        mlflow.log_param("passed_criteria", passed)
-
-        # Si pasa el umbral → guardar local y registrar
-        if passed:
-            from datetime import datetime
-            import os, pickle
+        with mlflow.start_run(run_name=model_name):
+            for k, v in model.get_params().items():
+                mlflow.log_param(k, v)
+            mlflow.log_metric("rmse", rmse)
+            mlflow.log_metric("r2", r2)
 
             timestamp = datetime.now().strftime("%Y%m%d_%H%M")
             model_dir = "Pipeline/models"
             os.makedirs(model_dir, exist_ok=True)
             model_path = os.path.join(model_dir, f"{model_name}_{timestamp}.pkl")
 
+            # Guardar modelo local
             with open(model_path, "wb") as f:
                 pickle.dump(model, f)
 
+            logger.info(f"✅ Modelo guardado localmente en: {model_path}")
             mlflow.log_artifact(model_path)
-            mlflow.sklearn.log_model(model, name="model", registered_model_name=registry_name)
 
-        else:
-            # Si no pasa, solo logueamos el modelo sin registrarlo
-            mlflow.sklearn.log_model(model, name="model_unqualified")
+            if register:
+                mlflow.sklearn.log_model(model, name="model", registered_model_name=registry_name)
+                logger.info(f"✅ Modelo registrado en MLflow como '{registry_name}'")
+            else:
+                mlflow.sklearn.log_model(model, name="model")
+                logger.info(f"Modelo loggeado en MLflow sin registro formal.")
 
-    return passed
+    except Exception as e:
+        logger.exception(f"Error al loggear el modelo '{model_name}' en MLflow.")
+        raise e
 
-
+# -------------------------------------------------------------------
+# MAIN SCRIPT
+# -------------------------------------------------------------------
 if __name__ == "__main__":
-    data = load_clean_data()
-    params_0 = get_params_from_pkl()
-    params_1 = {'objective': 'reg:squarederror', 'eval_metric': 'rmse', 'learning_rate': 0.1, 'max_depth': 3,  # Menor profundidad 'n_estimators': 2000,  # Más estimadores 'subsample': 0.8,  # Submuestreo para evitar sobreajuste
-    'colsample_bytree': 0.8,  # Muestra una fracción de las columnas
-    'random_state': 5,
-    'tree_method': 'hist',
-    'enable_categorical': True
-    }
-    params_2 = {
-    'objective': 'reg:squarederror',
-    'eval_metric': 'rmse',
-    'learning_rate': 0.05,  # Menor tasa de aprendizaje
-    'max_depth': 6,  # Mayor profundidad
-    'n_estimators': 500,  # Menos estimadores
-    'subsample': 0.9,  # Aumento del tamaño de la muestra
-    'colsample_bytree': 0.9,  # Aumento de la fracción de columnas
-    'random_state': 5,
-    'tree_method': 'hist',
-    'enable_categorical': True
-    }
-    params_3 = {
-    'objective': 'reg:squarederror',
-    'eval_metric': 'rmse',
-    'learning_rate': 0.1,
-    'max_depth': 4,  # Profundidad intermedia
-    'n_estimators': 1000,  # Estimadores intermedios
-    'subsample': 0.7,  # Submuestreo
-    'colsample_bytree': 0.7,  # Muestra menos columnas
-    'reg_alpha': 0.1,  # Regularización L1
-    'reg_lambda': 0.1,  # Regularización L2
-    'random_state': 5,
-    'tree_method': 'hist',
-    'enable_categorical': True
-    }
-    X, y = prepare_features(data)
-    # Entrenar varios modelos con diferentes hiperparámetros
-    #model_0, rmse_0, r2_0 = train_new_model(X, y, params_0, model_name="xgboost_retrained_with_pkl_params")
-    #model_1, rmse_1, r2_1 = train_new_model(X, y, params_1, model_name="xgboost_model_1")
-    model_2, rmse_2, r2_2 = train_new_model(X, y, params_2, model_name="xgboost_model_2")
-    model_3, rmse_3, r2_3 = train_new_model(X, y, params_3, model_name="xgboost_model_3")
-    # Subir los modelos a MLflow
-    #log_with_mlflow(model_0, rmse_0, r2_0, model_name="xgboost_retrained_with_pkl_params")
-    #log_with_mlflow(model_1, rmse_1, r2_1, model_name="xgboost_model_1")
-    log_with_mlflow(model_2, rmse_2, r2_2, model_name="xgboost_model_2", registry_name="modelo_api_p")
-    log_with_mlflow(model_3, rmse_3, r2_3, model_name="xgboost_model_3", registry_name="modelo_api_p_v2")
+    try:
+        logger.info("=== INICIO DEL ENTRENAMIENTO ===")
+
+        data = load_clean_data()
+
+        # Generar un set aleatorio de hiperparámetros
+        params_random = get_random_params()
+        logger.info(f"Hiperparámetros seleccionados aleatoriamente: {params_random}")
+
+        X, y = prepare_features(data)
+
+        # Entrenar modelo con parámetros aleatorios
+        model_random, rmse_random, r2_random = train_new_model(X, y, params_random, model_name="xgboost_model_random")
+
+        # Registrar y guardar el modelo solo si supera el umbral
+        log_with_mlflow(model_random, rmse_random, r2_random, model_name="xgboost_model_random", register=True, registry_name="modelo_random")
+
+        logger.info("=== FIN DEL ENTRENAMIENTO ===")
+
+    except Exception as e:
+        logger.exception("Error crítico en la ejecución principal del script.")
+        raise e
