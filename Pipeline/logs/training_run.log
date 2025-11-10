@@ -59,3 +59,12 @@
 2025-11-10 19:02:19,061 - INFO - Shape de X: (85632, 6), Shape de y: (85632,)
 2025-11-10 19:02:28,124 - INFO - Modelo 'xgboost_model_random' entrenado. RMSE=72744.65, R2=0.84
 2025-11-10 19:02:58,868 - INFO - === FIN DEL ENTRENAMIENTO ===
+2025-11-10 19:05:11,382 - INFO - === INICIO DEL ENTRENAMIENTO ===
+2025-11-10 19:05:11,724 - INFO - package: mysql.connector.plugins
+2025-11-10 19:05:11,728 - INFO - plugin_name: caching_sha2_password
+2025-11-10 19:05:11,728 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-11-10 19:05:19,663 - INFO - Datos cargados exitosamente desde MySQL.
+2025-11-10 19:05:19,684 - INFO - Hiperparámetros seleccionados aleatoriamente: {'objective': 'reg:squarederror', 'eval_metric': 'rmse', 'learning_rate': 0.07, 'max_depth': 7, 'n_estimators': 500, 'subsample': 0.9, 'colsample_bytree': 0.7, 'reg_alpha': 0.05, 'reg_lambda': 1.2, 'random_state': 91, 'tree_method': 'hist', 'enable_categorical': True}
+2025-11-10 19:05:19,855 - INFO - Shape de X: (85632, 6), Shape de y: (85632,)
+2025-11-10 19:05:25,334 - INFO - Modelo 'xgboost_model_random' entrenado. RMSE=70628.00, R2=0.85
+2025-11-10 19:05:53,745 - INFO - === FIN DEL ENTRENAMIENTO ===
