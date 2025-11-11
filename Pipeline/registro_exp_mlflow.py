@@ -141,13 +141,19 @@ def log_with_mlflow(model, rmse, r2, model_name, register=False, registry_name="
             model_dir = "Pipeline/models"
             os.makedirs(model_dir, exist_ok=True)
             model_path = os.path.join(model_dir, f"{model_name}_{timestamp}.pkl")
+            r2_path = os.path.join(model_dir, f"{model_name}_{timestamp}_r2.txt")
 
-            # Guardar modelo local
+            # ✅ Guardar modelo junto con su R²
             with open(model_path, "wb") as f:
-                pickle.dump(model, f)
+                pickle.dump({"model": model, "r2": r2}, f)
 
-            logger.info(f"✅ Modelo guardado localmente en: {model_path}")
+            # ✅ También guardar el r² en un archivo auxiliar de texto
+            with open(r2_path, "w") as f:
+                f.write(str(r2))
+
+            logger.info(f"✅ Modelo guardado localmente en: {model_path} (R²={r2:.4f})")
             mlflow.log_artifact(model_path)
+            mlflow.log_artifact(r2_path)
 
             if register:
                 mlflow.sklearn.log_model(model, name="model", registered_model_name=registry_name)
