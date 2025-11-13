@@ -25,17 +25,45 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Load the trained model
-MODEL_PATH = pipeline_dir / "models" / "model_api_test.pkl"
+# === Rutas de archivos ===
+MODELS_DIR = pipeline_dir / "models"
 SUBTE_STATIONS_PATH = pipeline_dir / "estaciones-de-subte copy.csv"
 BARRIOS_CSV_PATH = pipeline_dir / "barrios copy.csv"
 
+# === Buscar el modelo con mejor R² ===
+def load_best_model_by_r2(models_dir: Path):
+    """Carga el modelo con el mayor valor de R² registrado."""
+    best_model = None
+    best_r2 = -np.inf
+    best_model_path = None
+
+    if not models_dir.exists():
+        raise FileNotFoundError(f"No se encontró el directorio de modelos: {models_dir}")
+
+    for file in models_dir.glob("*.pkl"):
+        try:
+            data = joblib.load(file)
+            if isinstance(data, dict) and "model" in data and "r2" in data:
+                r2 = data["r2"]
+                if r2 > best_r2:
+                    best_r2 = r2
+                    best_model = data["model"]
+                    best_model_path = file
+        except Exception as e:
+            print(f"No se pudo leer {file.name}: {e}")
+
+    if best_model is None:
+        raise ValueError("No se encontró ningún modelo válido con R² registrado.")
+
+    print(f"✅ Modelo cargado: {best_model_path.name} (R² = {best_r2:.4f})")
+    return best_model, best_r2, best_model_path
+
+# === Cargar modelo con mejor R² ===
 try:
-    model = joblib.load(MODEL_PATH)
-    print(f"Model loaded successfully from {MODEL_PATH}")
+    model, best_r2, best_model_path = load_best_model_by_r2(MODELS_DIR)
 except Exception as e:
-    print(f"Error loading model: {e}")
-    model = None
+    print(f"⚠️ Error al cargar el mejor modelo: {e}")
+    model, best_r2, best_model_path = None, None, None
 
 # --- CLASE PRINCIPAL MODIFICADA CON ALIAS ---
 
@@ -247,7 +275,7 @@ async def model_info():
         # Try to get model information
         info = {
             "model_type": type(model)._name_,
-            "model_path": str(MODEL_PATH),
+            "model_path": str(best_model_path),
             "expected_features": ['rooms_final', 'm2_final', 'distancia_subte_cercano', 'l2', 'property_type', 'price', 'flag']
         }
         
