@@ -66,9 +66,9 @@ def predict_price(
         if response.status_code == 200:
             result = response.json()
             
-            if result["is_valid_for_prediction"]:
-                precio_predicho = result["predicted_price"]
-                features = result["input_features"]
+            if result["es_valido_para_prediccion"]:
+                precio_predicho = result["precio_predicho"]
+                features = result["caracteristicas_utilizadas"]
                 
                 output = f"""
 **PREDICCIÓN EXITOSA**
@@ -88,7 +88,7 @@ def predict_price(
 **DATOS NO VÁLIDOS**
 
 Los datos no pasaron la validación del preprocesamiento.
-Flags: {result.get('preprocessing_flags', 'N/A')}
+Flags: {result.get('flags_preprocesamiento', 'N/A')}
 
 Por favor, verifica los datos ingresados.
 """
@@ -158,7 +158,7 @@ with gr.Blocks(title="Predicción de Precios de Propiedades", theme=gr.themes.So
                 lines=3
             )
             precio = gr.Number(
-                label="Precio Publicado (USD)",
+                label="Precio Deseado Venta o Alquiler (USD)",
                 value=185000,
                 info="Este precio se usa para el preprocesamiento, no afecta la predicción"
             )

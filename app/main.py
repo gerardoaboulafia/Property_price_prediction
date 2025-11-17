@@ -21,7 +21,7 @@ from preprocess.clean_outliers import clean_data_outliers
 
 app = FastAPI(
     title="Property Price Prediction API",
-    description="API for predicting property prices using XGBoost model with preprocessing pipeline",
+    description="API para predecir precios de propiedades utilizando un modelo XGBoost con pipeline de preprocesamiento",
     version="1.0.0"
 )
 
@@ -87,7 +87,7 @@ class PropertyInput(BaseModel):
     
     l4: Optional[str] = Field(None, alias="Nivel_de_Ubicacion_4", description="Nivel de ubicación 4")
     l5: Optional[str] = Field(None, alias="Nivel_de_Ubicacion_5", description="Nivel de ubicación 5")
-    l6: Optional[float] = Field(None, alias="Nivel_de_Ubicacion_6", description="Nivel de ubicación 6")
+    l6: Optional[str] = Field(None, alias="Nivel_de_Ubicacion_6", description="Nivel de ubicación 6")
     
     # Características
     rooms: Optional[float] = Field(None, alias="Ambientes", description="Cantidad de ambientes")
@@ -146,10 +146,10 @@ class PropertyInput(BaseModel):
 
 class PredictionOutput(BaseModel):
     """Output schema for predictions"""
-    predicted_price: float = Field(..., description="Predicted price in USD")
-    preprocessing_flags: Optional[str] = Field(None, description="Any flags from preprocessing")
-    is_valid_for_prediction: bool = Field(..., description="Whether the data passed validation")
-    input_features: dict = Field(..., description="Features used for prediction")
+    precio_predicho: float = Field(..., description="Precio predicho en USD")
+    flags_preprocesamiento: Optional[str] = Field(None, description="Cualquier bandera del preprocesamiento")
+    es_valido_para_prediccion: bool = Field(..., description="Si los datos pasaron la validación")
+    caracteristicas_utilizadas: dict = Field(..., description="Características usadas para la predicción")
 
 class PipelineStatus(BaseModel):
     """Health check response"""
@@ -207,7 +207,7 @@ def preprocess_data(property_data: PropertyInput) -> pd.DataFrame:
 @app.post("/predict", response_model=PredictionOutput)
 async def predict_price(property_data: PropertyInput):
     """
-    Predict property price using the trained XGBoost model
+    Predecir el precio de la propiedad usando el modelo XGBoost entrenado
     """
     if model is None:
         raise HTTPException(status_code=500, detail="Model not loaded")
@@ -222,10 +222,10 @@ async def predict_price(property_data: PropertyInput):
         
         if not is_valid:
             return PredictionOutput(
-                predicted_price=0.0,
-                preprocessing_flags=flag_value,
-                is_valid_for_prediction=False,
-                input_features={}
+                precio_predicho=0.0,
+                flags_preprocesamiento=flag_value,
+                es_valido_para_prediccion=False,
+                caracteristicas_utilizadas={}
             )
         
         # Prepare features for prediction (following notebook transformations)
@@ -256,10 +256,10 @@ async def predict_price(property_data: PropertyInput):
         feature_dict = X_features.iloc[0].to_dict()
         
         return PredictionOutput(
-            predicted_price=float(prediction),
-            preprocessing_flags=None,
-            is_valid_for_prediction=True,
-            input_features=feature_dict
+            precio_predicho=float(prediction),
+            flags_preprocesamiento=None,
+            es_valido_para_prediccion=True,
+            caracteristicas_utilizadas=feature_dict
         )
         
     except Exception as e:
@@ -267,16 +267,16 @@ async def predict_price(property_data: PropertyInput):
 
 @app.get("/model/info")
 async def model_info():
-    """Get information about the loaded model"""
+    """Obtener información acerca del modelo cargado"""
     if model is None:
-        raise HTTPException(status_code=500, detail="Model not loaded")
+        raise HTTPException(status_code=500, detail="Modelo no cargado")
     
     try:
         # Try to get model information
         info = {
-            "model_type": type(model)._name_,
-            "model_path": str(best_model_path),
-            "expected_features": ['rooms_final', 'm2_final', 'distancia_subte_cercano', 'l2', 'property_type', 'price', 'flag']
+            "tipo_de_modelo": type(model).__name__,
+            "ruta_del_modelo": str(best_model_path),
+            "caracteristicas_esperadas": ['rooms_final', 'm2_final', 'distancia_subte_cercano', 'l2', 'property_type', 'price', 'flag']
         }
         
         # If it's a pipeline, try to get more details
@@ -285,7 +285,7 @@ async def model_info():
             
         return info
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error getting model info: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error consiguiendo informacion del modelo: {str(e)}")
 
 # --- MANEJO DE ERRORES Y DICCIONARIO ACTUALIZADO ---
 
