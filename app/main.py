@@ -83,7 +83,7 @@ class PropertyInput(BaseModel):
     # 📌 NIVELES DE UBICACIÓN SOLICITADOS (L1, L2, L3)
     l1: str = Field(..., alias="Ciudad", description="Nivel de ubicación 1 (L1 - Ciudad principal o Región)")
     l2: str = Field(..., alias="Barrio", description="Nivel de ubicación 2 (L2 - Barrio o Comuna)")
-    l3: str = Field(..., alias="Sub_barrio", description="Nivel de ubicación 3 (L3 - Sub-barrio o área específica)")
+    l3: Optional[str] = Field(None, alias="Sub_barrio", description="Nivel de ubicación 3 (L3 - Sub-barrio o área específica)")
     
     l4: Optional[str] = Field(None, alias="Nivel_de_Ubicacion_4", description="Nivel de ubicación 4")
     l5: Optional[str] = Field(None, alias="Nivel_de_Ubicacion_5", description="Nivel de ubicación 5")

@@ -38,7 +38,7 @@ def predict_price(
             "Longitud": longitud if longitud else None,
             "Ciudad": ciudad,
             "Barrio": barrio,
-            "Sub_barrio": sub_barrio,
+            "Sub_barrio": sub_barrio if sub_barrio else None,
             "Nivel_de_Ubicacion_4": None,
             "Nivel_de_Ubicacion_5": None,
             "Nivel_de_Ubicacion_6": None,
@@ -113,9 +113,9 @@ with gr.Blocks(title="Predicción de Precios de Propiedades", theme=gr.themes.So
     with gr.Row():
         with gr.Column():
             gr.Markdown("### Ubicación")
-            ciudad = gr.Textbox(label="Ciudad", value="Argentina", placeholder="Argentina")
-            barrio = gr.Textbox(label="Barrio", value="Capital Federal", placeholder="Capital Federal")
-            sub_barrio = gr.Textbox(label="Sub-barrio", placeholder="Ej: Palermo, Recoleta, Belgrano")
+            ciudad = gr.Textbox(label="Ciudad", value="Capital Federal", placeholder="Capital Federal")
+            barrio = gr.Textbox(label="Barrio", value="Ej: Palermo, Recoleta, Belgrano", placeholder="Ej: Palermo, Recoleta, Belgrano")
+            sub_barrio = gr.Textbox(label="Sub-barrio", placeholder="Palermo Soho, Palermo Hollywood, etc.")
             
             with gr.Row():
                 latitud = gr.Number(label="Latitud", value=-34.5900, precision=4)
