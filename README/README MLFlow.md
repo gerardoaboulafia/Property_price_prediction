@@ -35,6 +35,13 @@ params_ej = {
 }
 ```
 
+También es posible generar un conjunto aleatorio de hiperparámetros utilizando la función:
+
+```python
+params_random = get_params()
+
+```
+
 4- Al llamar a la función train_new_model, se debe guardar en variables, además del modelo, las métricas del mismo, presisamente el RMSE y R2. Se guarda en el mismo orden presentado, a continuación se detalla un ejemplo de como debe correrse y almacenar correctamente la función y sus respectivos resultados:
 
    model_ej, rmse_ej, r2_ej = train_new_model(X, y, params_ej, model_name="xgboost_ej")
@@ -42,6 +49,8 @@ params_ej = {
 5- Una vez guardado el modelo, se debe subir el mismo a MLFlow llamando a la función log_ml_flow y pasándole los siguientes parámetros: model; rmse; r2; model_name, register, el cual se le debe pasar register=False, si no se quiere REGISTRAR el modelo (diferente a almacenar dentro de MLFlow en un experimento), caso contrario se le debe pasar register=True; y por último registry_name, que si no se le pasa nada automáticamete se lo resgistra como "modelo_api_p". Así se vería un ejemplo a la hora de llamar a la función:
 
    log_with_mlflow(model_2, rmse_2, r2_2, model_name="xgboost_ej", register=True, registry_name="modelo_ej")
+
+   
 
 6- Una vez registrado el/los modelo/s, se debe cerrar sesión en MLFlow. Para ello, se debe ir a la consola donde se corrió el archivo (debe tener como nombre "Python: inicializacion_mlflow") y apretar CTRL+C, una vez cerrada debe imprimirse el mensaje:
 
@@ -52,6 +61,11 @@ params_ej = {
    
    el cual indica que se cerró MLFlow correctamente.
 
+### Nota importante sobre el guardado de modelos
+
+Los modelos solo se guardan si superan un umbral mínimo de desempeño, precisamente se debe tener un **R² mayor a 0.83**.
+
+Si el modelo no supera ese umbral, **no se guarda en disco ni se sube a MLflow**.
 
 
 
