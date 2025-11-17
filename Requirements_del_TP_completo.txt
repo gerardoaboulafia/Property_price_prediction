@@ -15,3 +15,4 @@ mlflow>=2.0.0
 pygame>=2.1.0
 mysql-connector-python>=8.0.0
 locust==2.42.1
+gradio==4.8.0
