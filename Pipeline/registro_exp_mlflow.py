@@ -10,6 +10,7 @@ from xgboost import XGBRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 import random
+from sqlalchemy import create_engine
 from preprocess.db_utils import get_connection, download_from_mysql
 
 # -------------------------------------------------------------------
@@ -23,7 +24,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler(log_path, mode="a"),
+        logging.FileHandler(log_path, mode="a", encoding="utf-8"),
         logging.StreamHandler()
     ]
 )
@@ -113,6 +114,10 @@ def train_new_model(X, y, params, model_name="xgboost_model"):
         rmse = np.sqrt(mean_squared_error(y_test, preds))
         r2 = r2_score(y_test, preds)
 
+        # Guardar X_test y y_test en el modelo para luego guardar predicciones
+        model.X_test = X_test
+        model.y_test = y_test
+
         logger.info(f"Modelo '{model_name}' entrenado. RMSE={rmse:.2f}, R2={r2:.2f}")
         return model, rmse, r2
     except Exception as e:
@@ -125,7 +130,7 @@ def train_new_model(X, y, params, model_name="xgboost_model"):
 def log_with_mlflow(model, rmse, r2, model_name, register=False, registry_name="modelo_random"):
     try:
         if r2 <= 0.83:
-            logger.warning(f"⚠️ Modelo con R²={r2:.4f} no cumple el umbral (0.83). No se guardará ni registrará.")
+            logger.warning(f"Modelo con R²={r2:.4f} no cumple el umbral (0.83). No se guardará ni registrará.")
             return
 
         mlflow.set_tracking_uri("http://localhost:5000")
@@ -143,21 +148,19 @@ def log_with_mlflow(model, rmse, r2, model_name, register=False, registry_name="
             model_path = os.path.join(model_dir, f"{model_name}_{timestamp}.pkl")
             r2_path = os.path.join(model_dir, f"{model_name}_{timestamp}_r2.txt")
 
-            # ✅ Guardar modelo junto con su R²
             with open(model_path, "wb") as f:
                 pickle.dump({"model": model, "r2": r2}, f)
 
-            # ✅ También guardar el r² en un archivo auxiliar de texto
             with open(r2_path, "w") as f:
                 f.write(str(r2))
 
-            logger.info(f"✅ Modelo guardado localmente en: {model_path} (R²={r2:.4f})")
+            logger.info(f"Modelo guardado localmente en: {model_path} (R²={r2:.4f})")
             mlflow.log_artifact(model_path)
             mlflow.log_artifact(r2_path)
 
             if register:
                 mlflow.sklearn.log_model(model, name="model", registered_model_name=registry_name)
-                logger.info(f"✅ Modelo registrado en MLflow como '{registry_name}'")
+                logger.info(f"Modelo registrado en MLflow como '{registry_name}'")
             else:
                 mlflow.sklearn.log_model(model, name="model")
                 logger.info(f"Modelo loggeado en MLflow sin registro formal.")
@@ -165,6 +168,59 @@ def log_with_mlflow(model, rmse, r2, model_name, register=False, registry_name="
     except Exception as e:
         logger.exception(f"Error al loggear el modelo '{model_name}' en MLflow.")
         raise e
+
+# -------------------------------------------------------------------
+# 6. Guardar predicciones directamente en SQL
+# -------------------------------------------------------------------
+def save_predictions_sql(model, table_name="predictions"):
+    try:
+        X_test = getattr(model, "X_test", None)
+        y_test = getattr(model, "y_test", None)
+        if X_test is None or y_test is None:
+            logger.warning("X_test o y_test no están disponibles. No se guardarán predicciones en SQL.")
+            return
+
+        preds = model.predict(X_test)
+        df_preds = pd.DataFrame({
+            "y_true": y_test,
+            "y_pred": preds
+        }).reset_index(drop=True)
+
+        # Conexión directa con MySQL
+        conn = get_connection(
+            user="labo_ame_agus",
+            password="ameagusmica",
+            host="localhost",
+            port=3307,
+            database="laboratorioII"
+        )
+
+        # Comprobar si la tabla existe: si no, crearla, si sí, solo agregar filas
+        cursor = conn.cursor()
+        cursor.execute(f"SHOW TABLES LIKE '{table_name}'")
+        exists = cursor.fetchone()
+        if not exists:
+            cols = ", ".join([f"`{col}` FLOAT" for col in df_preds.columns])
+            cursor.execute(f"CREATE TABLE {table_name} ({cols})")
+            conn.commit()
+
+        # Insertar las filas nuevas
+        for _, row in df_preds.iterrows():
+            placeholders = ", ".join(["%s"] * len(row))
+            cursor.execute(
+                f"INSERT INTO {table_name} VALUES ({placeholders})",
+                tuple(row.astype(str))
+            )
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        logger.info(f"Predicciones guardadas en SQL en la tabla '{table_name}' (filas insertadas: {len(df_preds)})")
+
+    except Exception as e:
+        logger.exception("Error al guardar predicciones en SQL.")
+        raise e
+
 
 # -------------------------------------------------------------------
 # MAIN SCRIPT
@@ -186,6 +242,9 @@ if __name__ == "__main__":
 
         # Registrar y guardar el modelo solo si supera el umbral
         log_with_mlflow(model_random, rmse_random, r2_random, model_name="xgboost_model_random", register=True, registry_name="modelo_random")
+
+        # Guardar predicciones directamente en SQL
+        save_predictions_sql(model_random)
 
         logger.info("=== FIN DEL ENTRENAMIENTO ===")
 

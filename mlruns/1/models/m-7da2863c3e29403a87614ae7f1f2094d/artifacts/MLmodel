@@ -1,0 +1,23 @@
+artifact_path: file:///C:/Users/mical/OneDrive - UCA/UCA/2025/2do cuatrimestre/Laboratorio
+  II/Property_price_prediction/mlruns/1/models/m-7da2863c3e29403a87614ae7f1f2094d/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.11.9
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.5.2
+mlflow_version: 3.4.0
+model_id: m-7da2863c3e29403a87614ae7f1f2094d
+model_size_bytes: 2155169
+model_uuid: m-7da2863c3e29403a87614ae7f1f2094d
+prompts: null
+run_id: 51a7d97288354313a5606bda3cd1d72b
+utc_time_created: '2025-11-29 17:51:38.594515'
