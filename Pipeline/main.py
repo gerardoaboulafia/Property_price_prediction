@@ -78,8 +78,7 @@ def main_pipeline():
     print("Calculando la distancia al subte más cercano...")
     data = calculate_subte_distance(
     data,
-    r"C:\Users\mical\OneDrive - UCA\UCA\2025\2do cuatrimestre\Laboratorio II\Property_price_prediction\Pipeline\estaciones-de-subte copy.csv"
-)
+    r"Pipeline\estaciones-de-subte copy.csv")
     
     print(data.head())
 
