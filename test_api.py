@@ -11,7 +11,7 @@ BASE_URL = "http://localhost:8000"
 
 def test_health_check():
     """Test the health check endpoint"""
-    response = requests.get(f"{BASE_URL}/")
+    response = requests.get(f"{BASE_URL}/health")
     print("Health Check Response:")
     print(json.dumps(response.json(), indent=2))
     print()
@@ -22,31 +22,31 @@ def test_prediction():
     # Sample property data (matching the schema)
     # Coordenadas de Palermo, Buenos Aires (antes del swap lat/lon)
     sample_property = {
-        "id": 1,
-        "ad_type": "property",
-        "start_date": "2023-01-01",
-        "end_date": "2023-12-31", 
-        "created_on": "2023-01-01",
-        "lat": -34.6037,  # latitud de CABA
-        "lon": -58.3816,  # longitud de CABA
-        "l1": "Capital Federal",
-        "l2": "Palermo",
-        "l3": "Palermo Soho",
-        "l4": None,
-        "l5": None,
-        "l6": None,
-        "rooms": 2.0,
-        "bedrooms": 1.0,
-        "bathrooms": 1.0,
-        "surface_total": 65.0,
-        "surface_covered": 60.0,
-        "currency": "USD",
-        "price_period": "monthly",
-        "title": "Departamento 2 ambientes 65m2 Palermo",
-        "description": "Hermoso departamento de 2 ambientes en Palermo, 65 metros cuadrados",
-        "property_type": "Departamento",
-        "operation_type": "Venta",
-        "price": 185000.0
+        "Identificador": 1,
+        "Tipo_de_Anuncio": "property",
+        "Fecha_de_Inicio": "2023-01-01",
+        "Fecha_de_Fin": "2023-12-31", 
+        "Fecha_de_Creacion": "2023-01-01",
+        "Latitud": -34.6037,
+        "Longitud": -58.3816,
+        "Ciudad": "Capital Federal",
+        "Barrio": "Palermo",
+        "Sub_barrio": "Palermo Soho",
+        "Nivel_de_Ubicacion_4": None,
+        "Nivel_de_Ubicacion_5": None,
+        "Nivel_de_Ubicacion_6": None,
+        "Ambientes": 2.0,
+        "Dormitorios": 1.0,
+        "Banios": 1.0,
+        "Superficie_Total_m2": 65.0,
+        "Superficie_Cubierta_m2": 60.0,
+        "Moneda": "USD",
+        "Periodo_de_Precio": "monthly",
+        "Titulo_del_Anuncio": "Departamento 2 ambientes 65m2 Palermo",
+        "Descripcion_del_Anuncio": "Hermoso departamento de 2 ambientes en Palermo, 65 metros cuadrados",
+        "Tipo_de_Propiedad": "Departamento",
+        "Tipo_de_Operacion": "Venta",
+        "Precio": 185000.0
     }
     
     response = requests.post(f"{BASE_URL}/predict", json=sample_property)
@@ -54,7 +54,7 @@ def test_prediction():
     try:
         print(json.dumps(response.json(), indent=2))
     except Exception as e:
-        print(f"⚠️ Error decoding JSON: {e}")
+        print(f"Error decoding JSON: {e}")
         print(f"Response status: {response.status_code}")
         print(f"Response text:\n{response.text}")
 
@@ -64,31 +64,31 @@ def test_invalid_property():
     """Test with invalid property (wrong currency) to see flags"""
     
     invalid_property = {
-        "id": 2,
-        "ad_type": "property",
-        "start_date": "2023-01-01",
-        "end_date": "2023-12-31",
-        "created_on": "2023-01-01",
-        "lat": -34.6037,  # latitud de CABA
-        "lon": -58.3816,  # longitud de CABA
-        "l1": "Argentina",
-        "l2": "Capital Federal", 
-        "l3": "Palermo",
-        "l4": None,
-        "l5": None,
-        "l6": None,
-        "rooms": 2.0,
-        "bedrooms": 1.0,
-        "bathrooms": 1.0,
-        "surface_total": 65.0,
-        "surface_covered": 60.0,
-        "currency": "ARS",  # Invalid currency - should be USD
-        "price_period": "monthly",
-        "title": "Departamento 2 ambientes 65m2 Palermo",
-        "description": "Hermoso departamento de 2 ambientes en Palermo, 65 metros cuadrados",
-        "property_type": "Departamento",
-        "operation_type": "Venta", 
-        "price": 185000.0
+        "Identificador": 2,
+        "Tipo_de_Anuncio": "property",
+        "Fecha_de_Inicio": "2023-01-01",
+        "Fecha_de_Fin": "2023-12-31",
+        "Fecha_de_Creacion": "2023-01-01",
+        "Latitud": -34.6037,
+        "Longitud": -58.3816,
+        "Ciudad": "Argentina",
+        "Barrio": "Capital Federal", 
+        "Sub_barrio": "Palermo",
+        "Nivel_de_Ubicacion_4": None,
+        "Nivel_de_Ubicacion_5": None,
+        "Nivel_de_Ubicacion_6": None,
+        "Ambientes": 2.0,
+        "Dormitorios": 1.0,
+        "Banios": 1.0,
+        "Superficie_Total_m2": 65.0,
+        "Superficie_Cubierta_m2": 60.0,
+        "Moneda": "ARS",
+        "Periodo_de_Precio": "monthly",
+        "Titulo_del_Anuncio": "Departamento 2 ambientes 65m2 Palermo",
+        "Descripcion_del_Anuncio": "Hermoso departamento de 2 ambientes en Palermo, 65 metros cuadrados",
+        "Tipo_de_Propiedad": "Departamento",
+        "Tipo_de_Operacion": "Venta", 
+        "Precio": 185000.0
     }
     
     response = requests.post(f"{BASE_URL}/predict", json=invalid_property)
@@ -108,31 +108,31 @@ def test_prediction_with_regex_extraction():
     
     # Property data where rooms is None but title contains room info
     regex_property = {
-        "id": 3,
-        "ad_type": "property",
-        "start_date": "2023-01-01",
-        "end_date": "2023-12-31",
-        "created_on": "2023-01-01",
-        "lat": -34.5875,  # latitud de Villa Crespo
-        "lon": -58.4387,  # longitud de Villa Crespo
-        "l1": "Capital Federal",
-        "l2": "Villa Crespo",
-        "l3": "Villa Crespo",
-        "l4": None,
-        "l5": None,
-        "l6": None,
-        "rooms": None,  # No rooms specified - should extract from title
-        "bedrooms": None,
-        "bathrooms": 1.0,
-        "surface_total": None,  # No surface specified - should extract from title
-        "surface_covered": None,
-        "currency": "USD",
-        "price_period": "monthly",
-        "title": "Hermoso departamento 3 ambientes 80m2 en Villa Crespo",
-        "description": "Departamento de tres ambientes con 80 metros cuadrados en Villa Crespo",
-        "property_type": "Departamento",
-        "operation_type": "Venta",
-        "price": 220000.0
+        "Identificador": 3,
+        "Tipo_de_Anuncio": "property",
+        "Fecha_de_Inicio": "2023-01-01",
+        "Fecha_de_Fin": "2023-12-31",
+        "Fecha_de_Creacion": "2023-01-01",
+        "Latitud": -34.5875,
+        "Longitud": -58.4387,
+        "Ciudad": "Capital Federal",
+        "Barrio": "Villa Crespo",
+        "Sub_barrio": "Villa Crespo",
+        "Nivel_de_Ubicacion_4": None,
+        "Nivel_de_Ubicacion_5": None,
+        "Nivel_de_Ubicacion_6": None,
+        "Ambientes": None,
+        "Dormitorios": None,
+        "Banios": 1.0,
+        "Superficie_Total_m2": None,
+        "Superficie_Cubierta_m2": None,
+        "Moneda": "USD",
+        "Periodo_de_Precio": "monthly",
+        "Titulo_del_Anuncio": "Hermoso departamento 3 ambientes 80m2 en Villa Crespo",
+        "Descripcion_del_Anuncio": "Departamento de tres ambientes con 80 metros cuadrados en Villa Crespo",
+        "Tipo_de_Propiedad": "Departamento",
+        "Tipo_de_Operacion": "Venta",
+        "Precio": 220000.0
     }
     
     response = requests.post(f"{BASE_URL}/predict", json=regex_property)
@@ -145,31 +145,31 @@ def test_none_coordinates():
     
     # Property data with None coordinates
     none_coords_property = {
-        "id": 4,
-        "ad_type": "property",
-        "start_date": "2023-01-01",
-        "end_date": "2023-12-31",
-        "created_on": "2023-01-01",
-        "lat": None,  # No coordinates
-        "lon": None,  # No coordinates
-        "l1": "Argentina",
-        "l2": "Capital Federal",
-        "l3": "Palermo",
-        "l4": None,
-        "l5": None,
-        "l6": None,
-        "rooms": 2.0,
-        "bedrooms": 1.0,
-        "bathrooms": 1.0,
-        "surface_total": 65.0,
-        "surface_covered": 60.0,
-        "currency": "USD",
-        "price_period": "monthly",
-        "title": "Departamento 2 ambientes 65m2 Palermo",
-        "description": "Hermoso departamento de 2 ambientes en Palermo, 65 metros cuadrados",
-        "property_type": "Departamento",
-        "operation_type": "Venta",
-        "price": 185000.0
+        "Identificador": 4,
+        "Tipo_de_Anuncio": "property",
+        "Fecha_de_Inicio": "2023-01-01",
+        "Fecha_de_Fin": "2023-12-31",
+        "Fecha_de_Creacion": "2023-01-01",
+        "Latitud": None,
+        "Longitud": None,
+        "Ciudad": "Argentina",
+        "Barrio": "Capital Federal",
+        "Sub_barrio": "Palermo",
+        "Nivel_de_Ubicacion_4": None,
+        "Nivel_de_Ubicacion_5": None,
+        "Nivel_de_Ubicacion_6": None,
+        "Ambientes": 2.0,
+        "Dormitorios": 1.0,
+        "Banios": 1.0,
+        "Superficie_Total_m2": 65.0,
+        "Superficie_Cubierta_m2": 60.0,
+        "Moneda": "USD",
+        "Periodo_de_Precio": "monthly",
+        "Titulo_del_Anuncio": "Departamento 2 ambientes 65m2 Palermo",
+        "Descripcion_del_Anuncio": "Hermoso departamento de 2 ambientes en Palermo, 65 metros cuadrados",
+        "Tipo_de_Propiedad": "Departamento",
+        "Tipo_de_Operacion": "Venta",
+        "Precio": 185000.0
     }
     
     response = requests.post(f"{BASE_URL}/predict", json=none_coords_property)

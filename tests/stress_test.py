@@ -18,7 +18,7 @@ class PropertyAPITest(HttpUser):
         "Sub_barrio": "Palermo Soho",
         "Nivel_de_Ubicacion_4": "",
         "Nivel_de_Ubicacion_5": "",
-        "Nivel_de_Ubicacion_6": 0,
+        "Nivel_de_Ubicacion_6": "",
         "Ambientes": 2.0,
         "Dormitorios": 1.0,
         "Banios": 1.0,

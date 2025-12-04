@@ -289,9 +289,9 @@ async def model_info():
 
 # --- MANEJO DE ERRORES Y DICCIONARIO ACTUALIZADO ---
 
-# Si tienes un archivo 'app/health.py' debes asegurarte de que exista:
-# from app.health import router as health_router
-# app.include_router(health_router)
+# --- INCLUIR EL ROUTER DE HEALTH ---
+from app.health import router as health_router
+app.include_router(health_router)
 
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError

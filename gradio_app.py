@@ -27,6 +27,21 @@ def predict_price(
     Envía los datos a la API y retorna la predicción
     """
     try:
+        # Validaciones
+        if ambientes is None or ambientes <= 0:
+            return """
+**ERROR DE VALIDACIÓN**
+
+**Ambientes:** Debes ingresar un número válido de ambientes (mayor a 0).
+"""
+        
+        if banios is None or banios <= 0:
+            return """
+**ERROR DE VALIDACIÓN**
+
+**Baños:** Debes ingresar un número válido de baños (mayor a 0).
+"""
+        
         # Construir el payload con los nombres en español (alias)
         payload = {
             "Identificador": 1,
@@ -42,9 +57,9 @@ def predict_price(
             "Nivel_de_Ubicacion_4": None,
             "Nivel_de_Ubicacion_5": None,
             "Nivel_de_Ubicacion_6": None,
-            "Ambientes": ambientes if ambientes else None,
+            "Ambientes": int(ambientes),
             "Dormitorios": dormitorios if dormitorios else None,
-            "Banios": banios if banios else None,
+            "Banios": int(banios),
             "Superficie_Total_m2": superficie_total if superficie_total else None,
             "Superficie_Cubierta_m2": superficie_cubierta if superficie_cubierta else None,
             "Moneda": "USD",
@@ -94,12 +109,12 @@ Por favor, verifica los datos ingresados.
 """
         else:
             error_detail = response.json().get("detail", "Error desconocido")
-            return f" **ERROR:** {error_detail}"
+            return f"**ERROR:** {error_detail}"
             
     except requests.exceptions.ConnectionError:
-        return " **ERROR DE CONEXIÓN:** No se pudo conectar a la API. Asegúrate de que esté corriendo en http://localhost:8000"
+        return "**ERROR DE CONEXIÓN:** No se pudo conectar a la API. Asegúrate de que esté corriendo en http://localhost:8000"
     except Exception as e:
-        return f" **ERROR INESPERADO:** {str(e)}"
+        return f"**ERROR INESPERADO:** {str(e)}"
 
 # Crear la interfaz de Gradio
 with gr.Blocks(title="Predicción de Precios de Propiedades", theme=gr.themes.Soft()) as demo:
@@ -113,8 +128,8 @@ with gr.Blocks(title="Predicción de Precios de Propiedades", theme=gr.themes.So
     with gr.Row():
         with gr.Column():
             gr.Markdown("### Ubicación")
-            ciudad = gr.Textbox(label="Ciudad", value="Capital Federal", placeholder="Capital Federal")
-            barrio = gr.Textbox(label="Barrio", value="Ej: Palermo, Recoleta, Belgrano", placeholder="Ej: Palermo, Recoleta, Belgrano")
+            ciudad = gr.Textbox(label="Ciudad", placeholder="Capital Federal")
+            barrio = gr.Textbox(label="Barrio", placeholder="Ej: Palermo, Recoleta, Belgrano")
             sub_barrio = gr.Textbox(label="Sub-barrio", placeholder="Palermo Soho, Palermo Hollywood, etc.")
             
             with gr.Row():
@@ -135,31 +150,38 @@ with gr.Blocks(title="Predicción de Precios de Propiedades", theme=gr.themes.So
             )
             
             with gr.Row():
-                ambientes = gr.Number(label="Ambientes", value=2, precision=0)
-                dormitorios = gr.Number(label="Dormitorios", value=1, precision=0)
-                banios = gr.Number(label="Baños", value=1, precision=0)
+                ambientes = gr.Number(
+                    label="Ambientes *",
+                    precision=0,
+                    minimum=1,
+                    info="Requerido: Debe ser mayor a 0"
+                )
+                dormitorios = gr.Number(label="Dormitorios", precision=0)
+                banios = gr.Number(
+                    label="Baños *",
+                    precision=0,
+                    minimum=1,
+                    info="Requerido: Debe ser mayor a 0"
+                )
             
             with gr.Row():
-                superficie_total = gr.Number(label="Superficie Total (m²)", value=65, precision=1)
-                superficie_cubierta = gr.Number(label="Superficie Cubierta (m²)", value=60, precision=1)
+                superficie_total = gr.Number(label="Superficie Total (m²)", precision=1)
+                superficie_cubierta = gr.Number(label="Superficie Cubierta (m²)", precision=1)
     
     with gr.Row():
         with gr.Column():
             gr.Markdown("### Información del Anuncio")
             titulo = gr.Textbox(
                 label="Título del Anuncio",
-                value="Departamento 2 ambientes 65m2 Palermo",
                 placeholder="Título descriptivo de la propiedad"
             )
             descripcion = gr.TextArea(
                 label="Descripción",
-                value="Hermoso departamento de 2 ambientes en Palermo, 65 metros cuadrados",
                 placeholder="Descripción detallada de la propiedad",
                 lines=3
             )
             precio = gr.Number(
                 label="Precio Deseado Venta o Alquiler (USD)",
-                value=185000,
                 info="Este precio se usa para el preprocesamiento, no afecta la predicción"
             )
     
@@ -184,6 +206,8 @@ with gr.Blocks(title="Predicción de Precios de Propiedades", theme=gr.themes.So
         **Nota:** Asegúrate de que la API esté corriendo en `http://localhost:8000` antes de usar esta interfaz.
         
         Para iniciar la API: `python -m uvicorn app.main:app --reload`
+        
+        **Campos marcados con * son obligatorios**
         """
     )
 
